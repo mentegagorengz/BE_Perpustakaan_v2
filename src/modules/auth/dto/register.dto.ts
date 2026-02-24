@@ -27,5 +27,4 @@ export class RegisterDto {
   @IsEnum(UserCategory)
   category: UserCategory;
 
-  // role TIDAK dimasukkan di sini — user baru otomatis mendapat SystemRole.USER dari entity default
 }

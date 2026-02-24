@@ -1,4 +1,3 @@
-// src/modules/languages/languages.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LanguagesService } from './languages.service';

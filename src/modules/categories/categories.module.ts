@@ -1,4 +1,3 @@
-// src/modules/categories/categories.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesService } from './categories.service';
@@ -9,6 +8,6 @@ import { Category } from './entities/category.entity';
   imports: [TypeOrmModule.forFeature([Category])],
   controllers: [CategoriesController],
   providers: [CategoriesService],
-  exports: [CategoriesService], // Export agar bisa digunakan di BooksModule jika perlu
+  exports: [CategoriesService], 
 })
 export class CategoriesModule {}

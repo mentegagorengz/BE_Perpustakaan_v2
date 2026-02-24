@@ -30,7 +30,7 @@ import databaseConfig from './config/database.config';
     PublishersModule,
     LanguagesModule,
     BooksModule,
-    TransactionsModule, // 2. Daftarkan di sini
+    TransactionsModule, 
   ],
 })
 export class AppModule {}

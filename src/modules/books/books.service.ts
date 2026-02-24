@@ -25,7 +25,6 @@ export class BooksService {
     const { author_ids, category_id, publisher_id, language_id, ...bookData } =
       createBookDto;
 
-    // 1. Cari semua author berdasarkan array ID
     const authors = await this.authorRepository.findBy({
       id: In(author_ids),
     });
@@ -34,7 +33,6 @@ export class BooksService {
       throw new NotFoundException('One or more authors not found');
     }
 
-    // 2. Buat instance book dan hubungkan relasinya
     const book = this.bookRepository.create({
       ...bookData,
       category: { id: category_id },
@@ -43,7 +41,6 @@ export class BooksService {
       authors: authors,
     });
 
-    // 3. Simpan ke database
     return this.bookRepository.save(book);
   }
 
@@ -129,19 +126,16 @@ export class BooksService {
   async createItem(createBookItemDto: CreateBookItemDto): Promise<BookItem> {
     const { book_id, ...itemData } = createBookItemDto;
 
-    // 1. Pastikan judul bukunya ada
     const book = await this.bookRepository.findOneBy({ id: book_id });
     if (!book) {
       throw new NotFoundException(`Book with ID ${book_id} not found`);
     }
 
-    // 2. Buat item baru
     const newItem = this.bookItemRepository.create({
       ...itemData,
       book: book,
     });
 
-    // 3. Simpan
     return this.bookItemRepository.save(newItem);
   }
 

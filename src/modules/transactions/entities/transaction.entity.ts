@@ -35,5 +35,5 @@ export class Transaction {
   fine_amount: number;
 
   @Column({ default: 'BORROWED' })
-  status: string; // BORROWED, RETURNED, OVERDUE
+  status: string; 
 }

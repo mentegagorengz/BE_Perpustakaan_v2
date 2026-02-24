@@ -1,4 +1,3 @@
-// src/modules/publishers/dto/create-publisher.dto.ts
 import { IsNotEmpty, IsString, IsOptional, MaxLength } from 'class-validator';
 
 export class CreatePublisherDto {

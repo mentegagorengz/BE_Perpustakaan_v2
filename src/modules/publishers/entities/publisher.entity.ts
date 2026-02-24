@@ -1,4 +1,3 @@
-// src/modules/publishers/entities/publisher.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Book } from '../../books/entities/book.entity';
 

@@ -134,7 +134,6 @@ export class TransactionsService {
     }
   }
 
-  // Riwayat transaksi semua user (ADMIN & STAFF)
   async findAll(
     paginationDto: PaginationDto,
   ): Promise<PaginatedResult<Transaction>> {
@@ -170,7 +169,6 @@ export class TransactionsService {
     };
   }
 
-  // Riwayat transaksi per user
   async findByUser(
     userId: number,
     paginationDto: PaginationDto,

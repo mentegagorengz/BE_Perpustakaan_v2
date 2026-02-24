@@ -20,7 +20,6 @@ export class ResponseInterceptor<T>
       map((data) => {
         const statusCode = context.switchToHttp().getResponse().statusCode;
 
-        // Jika response sudah punya format ApiResponse (punya statusCode & message), jangan wrap lagi
         if (data && data.statusCode && data.message) {
           return data;
         }

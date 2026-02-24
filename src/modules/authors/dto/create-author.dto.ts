@@ -8,5 +8,5 @@ export class CreateAuthorDto {
 
   @IsOptional()
   @IsString()
-  bio?: string; // Sesuai kolom 'bio' di skrip SQL kamu
+  bio?: string; 
 }

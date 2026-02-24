@@ -1,4 +1,3 @@
-// src/modules/books/entities/book-item.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,

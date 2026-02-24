@@ -7,19 +7,14 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 1. Prefix API
   app.setGlobalPrefix('api/v1');
 
-  // 2. CORS - agar frontend bisa akses backend
   app.enableCors();
 
-  // 3. Global Interceptor - format response konsisten { statusCode, message, data }
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  // 4. Global Exception Filter - format error konsisten
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // 5. Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

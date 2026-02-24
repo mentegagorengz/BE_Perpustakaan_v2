@@ -1,4 +1,3 @@
-// src/modules/publishers/publishers.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PublishersService } from './publishers.service';

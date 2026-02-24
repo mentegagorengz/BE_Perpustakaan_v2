@@ -22,13 +22,11 @@ import { PaginationDto } from '../../common/dto/pagination.dto';
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-  // Pinjam buku - semua user yang login bisa pinjam
   @Post('borrow')
   async borrow(@Body() dto: BorrowBookDto, @GetUser('id') userId: number) {
     return this.transactionsService.borrowBook({ ...dto, user_id: userId });
   }
 
-  // Kembalikan buku - hanya ADMIN & STAFF yang bisa proses pengembalian
   @UseGuards(RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Patch('return/:barcode')
@@ -36,7 +34,6 @@ export class TransactionsController {
     return this.transactionsService.returnBook(barcode);
   }
 
-  // Riwayat semua transaksi - hanya ADMIN & STAFF
   @UseGuards(RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Get()
@@ -44,7 +41,6 @@ export class TransactionsController {
     return this.transactionsService.findAll(paginationDto);
   }
 
-  // Riwayat transaksi user yang login
   @Get('my-history')
   async myHistory(
     @GetUser('id') userId: number,

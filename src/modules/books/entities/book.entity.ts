@@ -42,22 +42,18 @@ export class Book {
   @Column({ type: 'text', nullable: true })
   image_url: string;
 
-  // Many-to-One: Banyak buku bisa punya satu kategori yang sama
   @ManyToOne(() => Category, (category) => category.books)
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  // Many-to-One: Banyak buku dari satu penerbit
   @ManyToOne(() => Publisher, (publisher) => publisher.books)
   @JoinColumn({ name: 'publisher_id' })
   publisher: Publisher;
 
-  // Many-to-One: Banyak buku dalam satu bahasa
   @ManyToOne(() => Language)
   @JoinColumn({ name: 'language_id' })
   language: Language;
 
-  // Many-to-Many: Sesuai tabel 'book_authors' di SQL kamu
   @ManyToMany(() => Author, (author) => author.books)
   @JoinTable({
     name: 'book_authors',
@@ -66,7 +62,6 @@ export class Book {
   })
   authors: Author[];
 
-  // One-to-Many: Satu judul buku punya banyak fisik (exemplars)
   @OneToMany(() => BookItem, (item) => item.book)
   items: BookItem[];
 

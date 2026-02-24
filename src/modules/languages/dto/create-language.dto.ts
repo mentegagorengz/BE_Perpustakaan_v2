@@ -1,4 +1,3 @@
-// src/modules/languages/dto/create-language.dto.ts
 import { IsNotEmpty, IsString, IsOptional, MaxLength } from 'class-validator';
 
 export class CreateLanguageDto {
