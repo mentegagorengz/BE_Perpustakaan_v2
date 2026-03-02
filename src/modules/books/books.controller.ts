@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -19,10 +20,13 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
+@ApiTags('Books')
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
+  @ApiOperation({ summary: 'Tambah buku baru' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Post()
@@ -30,16 +34,20 @@ export class BooksController {
     return this.booksService.create(createBookDto);
   }
 
+  @ApiOperation({ summary: 'List semua buku (paginated)' })
   @Get()
   async findAll(@Query() paginationDto: PaginationDto) {
     return this.booksService.findAll(paginationDto);
   }
 
+  @ApiOperation({ summary: 'Detail buku beserta items' })
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.booksService.findOne(+id);
   }
 
+  @ApiOperation({ summary: 'Update buku' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Patch(':id')
@@ -47,6 +55,8 @@ export class BooksController {
     return this.booksService.update(+id, updateBookDto);
   }
 
+  @ApiOperation({ summary: 'Hapus buku' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
   @Delete(':id')
@@ -54,6 +64,8 @@ export class BooksController {
     return this.booksService.remove(+id);
   }
 
+  @ApiOperation({ summary: 'Tambah eksemplar fisik buku' })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Post('items')
@@ -61,6 +73,7 @@ export class BooksController {
     return this.booksService.createItem(createBookItemDto);
   }
 
+  @ApiOperation({ summary: 'List eksemplar sebuah buku' })
   @Get(':id/items')
   async findAllItems(@Param('id') id: string) {
     return this.booksService.findAllItems(+id);

@@ -29,6 +29,7 @@ export class TransactionsService {
       const bookItem = await queryRunner.manager.findOne(BookItem, {
         where: { barcode: dto.barcode },
         relations: ['book'],
+        lock: { mode: 'pessimistic_write' }, // Lock untuk mencegah race condition
       });
 
       if (!bookItem) throw new NotFoundException('Buku tidak ditemukan');
@@ -72,6 +73,7 @@ export class TransactionsService {
       const bookItem = await queryRunner.manager.findOne(BookItem, {
         where: { barcode },
         relations: ['book'],
+        lock: { mode: 'pessimistic_write' }, // Lock untuk mencegah race condition
       });
 
       if (!bookItem)

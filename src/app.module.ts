@@ -10,6 +10,7 @@ import { LanguagesModule } from './modules/languages/languages.module';
 import { BooksModule } from './modules/books/books.module'; // 1. Tambahkan Import ini
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import databaseConfig from './config/database.config';
+import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import databaseConfig from './config/database.config';
         return configService.get<TypeOrmModuleOptions>('database', {});
       },
     }),
+    ActivityLogsModule,
     AuthModule,
     UsersModule,
     CategoriesModule,
@@ -30,7 +32,7 @@ import databaseConfig from './config/database.config';
     PublishersModule,
     LanguagesModule,
     BooksModule,
-    TransactionsModule, 
+    TransactionsModule,
   ],
 })
 export class AppModule {}
