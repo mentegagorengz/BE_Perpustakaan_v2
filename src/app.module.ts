@@ -11,6 +11,8 @@ import { BooksModule } from './modules/books/books.module'; // 1. Tambahkan Impo
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import databaseConfig from './config/database.config';
 import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ArticlesModule } from './modules/articles/articles.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
     LanguagesModule,
     BooksModule,
     TransactionsModule,
+    DashboardModule,
+    ArticlesModule,
   ],
 })
 export class AppModule {}

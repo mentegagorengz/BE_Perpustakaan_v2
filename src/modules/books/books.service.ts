@@ -44,6 +44,11 @@ export class BooksService {
     return this.bookRepository.save(book);
   }
 
+  async createMany(booksDto: any[]): Promise<Book[]> {
+    const books = this.bookRepository.create(booksDto);
+    return await this.bookRepository.save(books);
+  }
+
   async findAll(paginationDto: PaginationDto): Promise<PaginatedResult<Book>> {
     const { page = 1, limit = 10, search } = paginationDto;
     const skip = (page - 1) * limit;

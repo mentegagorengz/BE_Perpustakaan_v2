@@ -78,4 +78,13 @@ export class BooksController {
   async findAllItems(@Param('id') id: string) {
     return this.booksService.findAllItems(+id);
   }
+
+  @ApiOperation({ summary: 'Tambah banyak buku sekaligus' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @Post('bulk')
+  async createMany(@Body() booksDto: any[]) {
+    return this.booksService.createMany(booksDto);
+  }
 }
