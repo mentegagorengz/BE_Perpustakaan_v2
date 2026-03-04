@@ -20,6 +20,15 @@ export class ArticlesService {
     return await this.articleRepo.save(article);
   }
 
+  async createMany(createArticlesDto: CreateArticleDto[], user: any) {
+    const articlesData = createArticlesDto.map((dto) => ({
+      ...dto,
+      author: { id: user.id || user.sub }, // Pastikan mengambil ID dari token
+    }));
+    const articles = this.articleRepo.create(articlesData);
+    return await this.articleRepo.save(articles);
+  }
+
   async findAll() {
     return await this.articleRepo.find({
       relations: ['author'],

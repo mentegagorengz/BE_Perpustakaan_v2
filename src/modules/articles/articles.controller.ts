@@ -63,4 +63,13 @@ export class ArticlesController {
   remove(@Param('id') id: string) {
     return this.articlesService.remove(+id);
   }
+
+  @Post('bulk')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @ApiOperation({ summary: 'Membuat banyak berita sekaligus (Admin/Staff Only)' })
+  createMany(@Body() createArticlesDto: CreateArticleDto[], @Req() req) {
+    return this.articlesService.createMany(createArticlesDto, req.user);
+  }
 }
