@@ -13,8 +13,13 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
+import {
+  ApiAuthErrors,
+  ApiResponseWrapped,
+} from '../../common/decorators/api-docs.decorator';
 
 @ApiTags('Auth')
+@ApiResponseWrapped()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -27,6 +32,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Login dan dapatkan access token' })
+  @ApiResponseWrapped()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
@@ -34,6 +40,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Lihat profil user yang sedang login' })
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('profile')

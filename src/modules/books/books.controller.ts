@@ -19,8 +19,14 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import {
+  ApiAuthErrors,
+  ApiNotFound,
+  ApiResponseWrapped,
+} from '../../common/decorators/api-docs.decorator';
 
 @ApiTags('Books')
+@ApiResponseWrapped()
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
@@ -29,18 +35,21 @@ export class BooksController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @ApiAuthErrors()
   @Post()
   async create(@Body() createBookDto: CreateBookDto) {
     return this.booksService.create(createBookDto);
   }
 
   @ApiOperation({ summary: 'List semua buku (paginated)' })
+  @ApiResponseWrapped()
   @Get()
   async findAll(@Query() paginationDto: PaginationDto) {
     return this.booksService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Detail buku beserta items' })
+  @ApiNotFound('Buku')
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.booksService.findOne(+id);
@@ -50,6 +59,8 @@ export class BooksController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @ApiAuthErrors()
+  @ApiNotFound('Buku')
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
     return this.booksService.update(+id, updateBookDto);
@@ -59,6 +70,8 @@ export class BooksController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
+  @ApiAuthErrors()
+  @ApiNotFound('Buku')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.booksService.remove(+id);
@@ -68,12 +81,14 @@ export class BooksController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @ApiAuthErrors()
   @Post('items')
   async createItem(@Body() createBookItemDto: CreateBookItemDto) {
     return this.booksService.createItem(createBookItemDto);
   }
 
   @ApiOperation({ summary: 'List eksemplar sebuah buku' })
+  @ApiNotFound('Buku')
   @Get(':id/items')
   async findAllItems(@Param('id') id: string) {
     return this.booksService.findAllItems(+id);
@@ -83,6 +98,7 @@ export class BooksController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @ApiAuthErrors()
   @Post('bulk')
   async createMany(@Body() booksDto: any[]) {
     return this.booksService.createMany(booksDto);

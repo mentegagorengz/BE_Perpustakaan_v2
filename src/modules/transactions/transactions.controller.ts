@@ -17,9 +17,15 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import {
+  ApiAuthErrors,
+  ApiResponseWrapped,
+} from '../../common/decorators/api-docs.decorator';
 
 @ApiTags('Transactions')
+@ApiResponseWrapped()
 @ApiBearerAuth()
+@ApiAuthErrors()
 @Controller('transactions')
 @UseGuards(JwtAuthGuard)
 export class TransactionsController {
@@ -32,6 +38,7 @@ export class TransactionsController {
   }
 
   @ApiOperation({ summary: 'Kembalikan buku berdasarkan barcode' })
+  @ApiResponseWrapped()
   @UseGuards(RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Patch('return/:barcode')
@@ -40,6 +47,7 @@ export class TransactionsController {
   }
 
   @ApiOperation({ summary: 'Riwayat semua transaksi (paginated)' })
+  @ApiResponseWrapped()
   @UseGuards(RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Get()
@@ -48,6 +56,7 @@ export class TransactionsController {
   }
 
   @ApiOperation({ summary: 'Riwayat transaksi user yang login' })
+  @ApiResponseWrapped()
   @Get('my-history')
   async myHistory(
     @GetUser('id') userId: number,
