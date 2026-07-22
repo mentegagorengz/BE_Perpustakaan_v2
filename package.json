@@ -16,7 +16,12 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/jest/bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "openapi:generate": "ts-node -r tsconfig-paths/register ./scripts/generate-openapi.ts",
+    "typeorm": "node --env-file=.env ./node_modules/typeorm/cli.js",
+    "migration:generate": "npm run build && npm run typeorm -- migration:generate ./src/migrations/${npm_config_name:-Migration} -d ./dist/config/data-source.js",
+    "migration:run": "npm run build && npm run typeorm -- migration:run -d ./dist/config/data-source.js",
+    "migration:revert": "npm run build && npm run typeorm -- migration:revert -d ./dist/config/data-source.js"
   },
   "engines": {
     "npm": ">=10.0.0",
@@ -31,6 +36,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.11",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",

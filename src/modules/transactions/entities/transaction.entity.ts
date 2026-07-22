@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { BookItem } from '../../books/entities/book-item.entity';
+import { ColumnNumericTransformer } from '../../../common/transformers/numeric.transformer';
 
 @Entity('transactions')
 export class Transaction {
@@ -31,7 +32,13 @@ export class Transaction {
   @Column({ type: 'timestamp', nullable: true })
   returned_at: Date;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
   fine_amount: number;
 
   @Column({ default: 'BORROWED' })

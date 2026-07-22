@@ -20,16 +20,19 @@ export class AuthService {
   async register(registerDto: RegisterDto): Promise<Partial<User>> {
     const { email, password, identification_number } = registerDto;
 
+    // Pesan konflik sengaja dibuat generik dan identik untuk email maupun
+    // identification_number agar tidak membocorkan data mana yang sudah
+    // terdaftar (mencegah user/account enumeration lewat endpoint register).
     const existingByEmail = await this.usersService.findByEmail(email);
     if (existingByEmail) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException('Data registrasi sudah terdaftar');
     }
 
     const existingById = await this.usersService.findByIdentificationNumber(
       identification_number,
     );
     if (existingById) {
-      throw new ConflictException('Identification number already exists');
+      throw new ConflictException('Data registrasi sudah terdaftar');
     }
 
     const salt = await bcrypt.genSalt(10);

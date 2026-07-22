@@ -18,14 +18,21 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import {
+  ApiAuthErrors,
+  ApiNotFound,
+  ApiResponseWrapped,
+} from '../../common/decorators/api-docs.decorator';
 
 @ApiTags('Categories')
+@ApiResponseWrapped()
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @ApiOperation({ summary: 'Tambah kategori baru' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Post()
@@ -34,12 +41,14 @@ export class CategoriesController {
   }
 
   @ApiOperation({ summary: 'List semua kategori (paginated)' })
+  @ApiResponseWrapped()
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.categoriesService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Detail kategori' })
+  @ApiNotFound('Kategori')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(+id);
@@ -47,6 +56,8 @@ export class CategoriesController {
 
   @ApiOperation({ summary: 'Update kategori' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
+  @ApiNotFound('Kategori')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Patch(':id')
@@ -59,6 +70,8 @@ export class CategoriesController {
 
   @ApiOperation({ summary: 'Hapus kategori' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
+  @ApiNotFound('Kategori')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
   @Delete(':id')

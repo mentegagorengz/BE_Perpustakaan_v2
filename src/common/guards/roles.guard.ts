@@ -18,6 +18,13 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
+
+    // Fail-closed: tanpa user (atau tanpa role) ter-attach, tolak akses.
+    // Jangan biarkan akses TypeError menjadi 500 — perlakukan sebagai 403.
+    if (!user || !user.role) {
+      return false;
+    }
+
     return requiredRoles.some((role) => user.role === role);
   }
 }

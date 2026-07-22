@@ -18,14 +18,21 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import {
+  ApiAuthErrors,
+  ApiNotFound,
+  ApiResponseWrapped,
+} from '../../common/decorators/api-docs.decorator';
 
 @ApiTags('Authors')
+@ApiResponseWrapped()
 @Controller('authors')
 export class AuthorsController {
   constructor(private readonly authorsService: AuthorsService) {}
 
   @ApiOperation({ summary: 'Tambah penulis baru' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Post()
@@ -34,12 +41,14 @@ export class AuthorsController {
   }
 
   @ApiOperation({ summary: 'List semua penulis (paginated)' })
+  @ApiResponseWrapped()
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.authorsService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Detail penulis' })
+  @ApiNotFound('Penulis')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.authorsService.findOne(+id);
@@ -47,6 +56,8 @@ export class AuthorsController {
 
   @ApiOperation({ summary: 'Update penulis' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
+  @ApiNotFound('Penulis')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Patch(':id')
@@ -56,6 +67,8 @@ export class AuthorsController {
 
   @ApiOperation({ summary: 'Hapus penulis' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
+  @ApiNotFound('Penulis')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
   @Delete(':id')

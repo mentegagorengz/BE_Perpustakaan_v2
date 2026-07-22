@@ -18,14 +18,21 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
 import { PaginationDto } from '../../common/dto/pagination.dto';
+import {
+  ApiAuthErrors,
+  ApiNotFound,
+  ApiResponseWrapped,
+} from '../../common/decorators/api-docs.decorator';
 
 @ApiTags('Languages')
+@ApiResponseWrapped()
 @Controller('languages')
 export class LanguagesController {
   constructor(private readonly languagesService: LanguagesService) {}
 
   @ApiOperation({ summary: 'Tambah bahasa baru' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Post()
@@ -34,12 +41,14 @@ export class LanguagesController {
   }
 
   @ApiOperation({ summary: 'List semua bahasa (paginated)' })
+  @ApiResponseWrapped()
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.languagesService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Detail bahasa' })
+  @ApiNotFound('Bahasa')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.languagesService.findOne(+id);
@@ -47,6 +56,8 @@ export class LanguagesController {
 
   @ApiOperation({ summary: 'Update bahasa' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
+  @ApiNotFound('Bahasa')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Patch(':id')
@@ -59,6 +70,8 @@ export class LanguagesController {
 
   @ApiOperation({ summary: 'Hapus bahasa' })
   @ApiBearerAuth()
+  @ApiAuthErrors()
+  @ApiNotFound('Bahasa')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
   @Delete(':id')

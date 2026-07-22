@@ -6,9 +6,15 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
+import {
+  ApiAuthErrors,
+  ApiResponseWrapped,
+} from '../../common/decorators/api-docs.decorator';
 
 @ApiTags('Activity Logs')
+@ApiResponseWrapped()
 @ApiBearerAuth()
+@ApiAuthErrors()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('activity-logs')
 export class ActivityLogsController {
@@ -17,6 +23,7 @@ export class ActivityLogsController {
   @Get()
   @Roles(SystemRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Melihat seluruh log aktivitas (Super Admin Only)' })
+  @ApiResponseWrapped()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.activityLogsService.findAll(paginationDto);
   }

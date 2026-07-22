@@ -10,6 +10,8 @@ import { BookItem } from '../books/entities/book-item.entity';
 import { BorrowBookDto } from './dto/borrow-book.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PaginatedResult } from '../../common/interfaces/paginated-result.interface';
+import { BookStatus, TransactionStatus } from '../../common/enums/book.enum';
+import { PolicyService } from '../policy/policy.service';
 
 @Injectable()
 export class TransactionsService {
@@ -17,6 +19,7 @@ export class TransactionsService {
     private dataSource: DataSource,
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
+    private readonly policyService: PolicyService,
   ) {}
 
   async borrowBook(dto: BorrowBookDto) {
@@ -26,29 +29,44 @@ export class TransactionsService {
 
     try {
       // 1. Cek apakah buku ada dan tersedia
+      // Tidak me-load relasi 'book' di sini: menggabungkan pessimistic_write
+      // dengan relasi menghasilkan LEFT JOIN + FOR UPDATE yang ditolak
+      // PostgreSQL ("FOR UPDATE cannot be applied to the nullable side of an
+      // outer join"). Logika borrow hanya butuh kolom bookItem itu sendiri.
       const bookItem = await queryRunner.manager.findOne(BookItem, {
         where: { barcode: dto.barcode },
-        relations: ['book'],
         lock: { mode: 'pessimistic_write' }, // Lock untuk mencegah race condition
       });
 
       if (!bookItem) throw new NotFoundException('Buku tidak ditemukan');
-      if (bookItem.status !== 'AVAILABLE')
+      if (bookItem.status !== BookStatus.AVAILABLE)
         throw new BadRequestException('Buku sedang tidak tersedia');
+
+      const policy = await this.policyService.getPolicy();
+
+      // Cek kuota pinjam aktif user (returned_at IS NULL)
+      const activeCount = await queryRunner.manager.count(Transaction, {
+        where: { user: { id: dto.user_id }, returned_at: IsNull() },
+      });
+      if (activeCount >= policy.max_books_per_user) {
+        throw new BadRequestException(
+          `Sudah mencapai batas maksimal ${policy.max_books_per_user} buku dipinjam`,
+        );
+      }
 
       // 2. Buat record transaksi
       const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 7); // Default pinjam 7 hari
+      dueDate.setDate(dueDate.getDate() + policy.loan_duration_days);
 
       const transaction = queryRunner.manager.create(Transaction, {
         user: { id: dto.user_id },
         bookItem: bookItem,
         due_date: dueDate,
-        status: 'BORROWED',
+        status: TransactionStatus.BORROWED,
       });
 
       // 3. Update status buku menjadi BORROWED
-      bookItem.status = 'BORROWED';
+      bookItem.status = BookStatus.BORROWED;
 
       await queryRunner.manager.save(transaction);
       await queryRunner.manager.save(bookItem);
@@ -70,9 +88,12 @@ export class TransactionsService {
 
     try {
       // 1. Cari fisik buku berdasarkan barcode
+      // Catatan: TANPA relations. `pessimistic_write` menghasilkan FOR UPDATE,
+      // dan menggabungkannya dengan relasi (LEFT JOIN) ditolak PostgreSQL
+      // ("FOR UPDATE cannot be applied to the nullable side of an outer join").
+      // Relasi `book` juga tidak dipakai di alur ini.
       const bookItem = await queryRunner.manager.findOne(BookItem, {
         where: { barcode },
-        relations: ['book'],
         lock: { mode: 'pessimistic_write' }, // Lock untuk mencegah race condition
       });
 
@@ -80,7 +101,7 @@ export class TransactionsService {
         throw new NotFoundException(
           'Buku dengan barcode tersebut tidak terdaftar',
         );
-      if (bookItem.status !== 'BORROWED')
+      if (bookItem.status !== BookStatus.BORROWED)
         throw new BadRequestException(
           'Buku ini sedang tidak dalam status dipinjam',
         );
@@ -99,23 +120,32 @@ export class TransactionsService {
       // 3. Hitung denda jika terlambat
       const returnDate = new Date();
       let fineAmount = 0;
-      const dailyFine = 5000; // Denda Rp 5.000 per hari
+      const policy = await this.policyService.getPolicy();
+      const dailyFine = policy.fine_per_day;
 
-      if (returnDate > transaction.due_date) {
-        const diffTime = Math.abs(
-          returnDate.getTime() - transaction.due_date.getTime(),
+      // Denda dihitung per hari kalender: normalkan kedua tanggal ke awal hari
+      // (strip jam-menit-detik) supaya keterlambatan beberapa jam di hari yang
+      // sama dengan due_date tidak dikenai denda.
+      const dueDay = new Date(transaction.due_date);
+      dueDay.setHours(0, 0, 0, 0);
+      const returnDay = new Date(returnDate);
+      returnDay.setHours(0, 0, 0, 0);
+
+      if (returnDay > dueDay) {
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const diffDays = Math.round(
+          (returnDay.getTime() - dueDay.getTime()) / msPerDay,
         );
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         fineAmount = diffDays * dailyFine;
       }
 
       // 4. Update data transaksi
       transaction.returned_at = returnDate;
       transaction.fine_amount = fineAmount;
-      transaction.status = 'RETURNED';
+      transaction.status = TransactionStatus.RETURNED;
 
       // 5. Update status fisik buku menjadi tersedia kembali
-      bookItem.status = 'AVAILABLE';
+      bookItem.status = BookStatus.AVAILABLE;
 
       await queryRunner.manager.save(transaction);
       await queryRunner.manager.save(bookItem);
