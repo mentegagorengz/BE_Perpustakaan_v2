@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { BooksService } from './books.service';
@@ -100,7 +101,10 @@ export class BooksController {
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiAuthErrors()
   @Post('bulk')
-  async createMany(@Body() booksDto: any[]) {
+  async createMany(
+    @Body(new ParseArrayPipe({ items: CreateBookDto }))
+    booksDto: CreateBookDto[],
+  ) {
     return this.booksService.createMany(booksDto);
   }
 }

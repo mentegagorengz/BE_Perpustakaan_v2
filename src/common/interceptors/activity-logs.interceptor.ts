@@ -15,10 +15,7 @@ export class ActivityLogInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     const { method, url } = request;
-    const ip =
-      request.headers['x-forwarded-for'] ||
-      request.ip ||
-      request.connection?.remoteAddress;
+    const ip = request.ip || request.connection?.remoteAddress;
     const device = request.headers['user-agent'];
 
     return next.handle().pipe(

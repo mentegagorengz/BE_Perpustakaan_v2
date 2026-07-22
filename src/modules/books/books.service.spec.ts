@@ -7,7 +7,6 @@ import { Book } from './entities/book.entity';
 import { BookItem } from './entities/book-item.entity';
 import { Author } from '../authors/entities/author.entity';
 import { CreateBookDto } from './dto/create-book.dto';
-
 describe('BooksService', () => {
   let service: BooksService;
   let bookRepo: {
@@ -135,7 +134,7 @@ describe('BooksService', () => {
 
   describe('createMany', () => {
     it('creates and persists the batch of books', async () => {
-      const dtos = [{ title: 'A' }, { title: 'B' }];
+      const dtos = [{ title: 'A', category_id: 1, publisher_id: 1, language_id: 1, author_ids: [1] } as any, { title: 'B', category_id: 1, publisher_id: 1, language_id: 1, author_ids: [1] } as any];
       const built = [{ id: 1 }, { id: 2 }];
       bookRepo.create.mockReturnValue(built);
       bookRepo.save.mockResolvedValue(built);

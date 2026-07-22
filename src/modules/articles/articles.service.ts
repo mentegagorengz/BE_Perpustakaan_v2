@@ -46,7 +46,7 @@ export class ArticlesService {
     return article;
   }
 
-  async update(id: number, updateData: Partial<CreateArticleDto>) {
+  async update(id: number, updateData: UpdateArticleDto) {
     const article = await this.findOne(id);
     Object.assign(article, updateData);
     return await this.articleRepo.save(article);

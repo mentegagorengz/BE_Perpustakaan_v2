@@ -12,6 +12,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
+import { UpdateArticleDto } from './dto/update-article.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -58,10 +59,7 @@ export class ArticlesController {
   @ApiOperation({ summary: 'Update berita' })
   @ApiAuthErrors()
   @ApiNotFound('Berita')
-  update(
-    @Param('id') id: string,
-    @Body() updateData: Partial<CreateArticleDto>,
-  ) {
+  update(@Param('id') id: string, @Body() updateData: UpdateArticleDto) {
     return this.articlesService.update(+id, updateData);
   }
 

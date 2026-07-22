@@ -85,7 +85,7 @@ describe('TransactionsService', () => {
       const bookItem = { id: 10, barcode: 'B001', status: 'AVAILABLE' };
       queryRunner.manager.findOne.mockResolvedValueOnce(bookItem);
 
-      const result = await service.borrowBook({ barcode: 'B001', user_id: 1 });
+      const result = await service.borrowBook('B001', 1);
 
       // Transaksi dibuka dengan benar
       expect(queryRunner.connect).toHaveBeenCalled();
@@ -125,9 +125,9 @@ describe('TransactionsService', () => {
     it('buku tidak ditemukan: NotFoundException dan rollback', async () => {
       queryRunner.manager.findOne.mockResolvedValueOnce(null);
 
-      await expect(
-        service.borrowBook({ barcode: 'NOPE', user_id: 1 }),
-      ).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.borrowBook('NOPE', 1)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
 
       expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
       expect(queryRunner.commitTransaction).not.toHaveBeenCalled();
@@ -141,9 +141,9 @@ describe('TransactionsService', () => {
         status: 'BORROWED',
       });
 
-      await expect(
-        service.borrowBook({ barcode: 'B001', user_id: 1 }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.borrowBook('B001', 1)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
       expect(queryRunner.commitTransaction).not.toHaveBeenCalled();
@@ -159,9 +159,7 @@ describe('TransactionsService', () => {
       });
       queryRunner.manager.count.mockResolvedValueOnce(3);
 
-      await expect(
-        service.borrowBook({ barcode: 'B001', user_id: 5 }),
-      ).rejects.toThrow(/maksimal/i);
+      await expect(service.borrowBook('B001', 5)).rejects.toThrow(/maksimal/i);
 
       expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
       expect(queryRunner.commitTransaction).not.toHaveBeenCalled();

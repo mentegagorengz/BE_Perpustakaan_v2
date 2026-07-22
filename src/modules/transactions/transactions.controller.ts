@@ -34,7 +34,7 @@ export class TransactionsController {
   @ApiOperation({ summary: 'Pinjam buku' })
   @Post('borrow')
   async borrow(@Body() dto: BorrowBookDto, @GetUser('id') userId: number) {
-    return this.transactionsService.borrowBook({ ...dto, user_id: userId });
+    return this.transactionsService.borrowBook(dto.barcode, userId);
   }
 
   @ApiOperation({ summary: 'Kembalikan buku berdasarkan barcode' })

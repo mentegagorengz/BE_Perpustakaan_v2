@@ -7,7 +7,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, IsNull, Repository } from 'typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { BookItem } from '../books/entities/book-item.entity';
-import { BorrowBookDto } from './dto/borrow-book.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PaginatedResult } from '../../common/interfaces/paginated-result.interface';
 import { BookStatus, TransactionStatus } from '../../common/enums/book.enum';
@@ -22,20 +21,15 @@ export class TransactionsService {
     private readonly policyService: PolicyService,
   ) {}
 
-  async borrowBook(dto: BorrowBookDto) {
+  async borrowBook(barcode: string, userId: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // 1. Cek apakah buku ada dan tersedia
-      // Tidak me-load relasi 'book' di sini: menggabungkan pessimistic_write
-      // dengan relasi menghasilkan LEFT JOIN + FOR UPDATE yang ditolak
-      // PostgreSQL ("FOR UPDATE cannot be applied to the nullable side of an
-      // outer join"). Logika borrow hanya butuh kolom bookItem itu sendiri.
       const bookItem = await queryRunner.manager.findOne(BookItem, {
-        where: { barcode: dto.barcode },
-        lock: { mode: 'pessimistic_write' }, // Lock untuk mencegah race condition
+        where: { barcode },
+        lock: { mode: 'pessimistic_write' },
       });
 
       if (!bookItem) throw new NotFoundException('Buku tidak ditemukan');
@@ -44,9 +38,8 @@ export class TransactionsService {
 
       const policy = await this.policyService.getPolicy();
 
-      // Cek kuota pinjam aktif user (returned_at IS NULL)
       const activeCount = await queryRunner.manager.count(Transaction, {
-        where: { user: { id: dto.user_id }, returned_at: IsNull() },
+        where: { user: { id: userId }, returned_at: IsNull() },
       });
       if (activeCount >= policy.max_books_per_user) {
         throw new BadRequestException(
@@ -54,12 +47,11 @@ export class TransactionsService {
         );
       }
 
-      // 2. Buat record transaksi
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + policy.loan_duration_days);
 
       const transaction = queryRunner.manager.create(Transaction, {
-        user: { id: dto.user_id },
+        user: { id: userId },
         bookItem: bookItem,
         due_date: dueDate,
         status: TransactionStatus.BORROWED,

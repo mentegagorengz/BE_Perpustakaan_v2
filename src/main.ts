@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -9,9 +10,17 @@ import { ActivityLogInterceptor } from './common/interceptors/activity-logs.inte
 import { buildOpenApiDocument } from './config/swagger.config';
 
 async function bootstrap() {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    throw new Error(
+      'JWT_SECRET must be set and at least 32 characters long in .env',
+    );
+  }
+
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api/v1');
+  app.use(helmet());
+  app.set('trust proxy', 1);
 
   // Batasi origin ke daftar di CORS_ORIGIN (comma-separated).
   // - Bila diset: hanya origin tersebut yang diizinkan, boleh pakai credentials.

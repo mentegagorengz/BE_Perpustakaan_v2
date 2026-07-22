@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsString,
   MinLength,
+  Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserCategory } from '../../../common/enums/role.enum';
@@ -18,10 +19,13 @@ export class RegisterDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'password123', minLength: 8 })
+  @ApiProperty({ example: 'Str0ng!P4ss#2024', minLength: 8 })
   @IsNotEmpty()
   @IsString()
   @MinLength(8)
+  @Matches(/(?=.*[a-zA-Z])(?=.*[0-9])/, {
+    message: 'Password must contain at least 1 letter and 1 number',
+  })
   password: string;
 
   @ApiProperty({ example: 'John Doe' })

@@ -44,7 +44,7 @@ export class BooksService {
     return this.bookRepository.save(book);
   }
 
-  async createMany(booksDto: any[]): Promise<Book[]> {
+  async createMany(booksDto: CreateBookDto[]): Promise<Book[]> {
     const books = this.bookRepository.create(booksDto);
     return await this.bookRepository.save(books);
   }

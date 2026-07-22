@@ -38,10 +38,7 @@ describe('TransactionsController', () => {
 
       const result = await controller.borrow({ barcode: 'B001' } as any, 42);
 
-      expect(service.borrowBook).toHaveBeenCalledWith({
-        barcode: 'B001',
-        user_id: 42,
-      });
+      expect(service.borrowBook).toHaveBeenCalledWith('B001', 42);
       expect(result).toBe(expected);
     });
   });
