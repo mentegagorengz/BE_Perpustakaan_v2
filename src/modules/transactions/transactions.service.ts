@@ -11,6 +11,7 @@ import { BorrowBookDto } from './dto/borrow-book.dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PaginatedResult } from '../../common/interfaces/paginated-result.interface';
 import { BookStatus, TransactionStatus } from '../../common/enums/book.enum';
+import { PolicyService } from '../policy/policy.service';
 
 @Injectable()
 export class TransactionsService {
@@ -18,6 +19,7 @@ export class TransactionsService {
     private dataSource: DataSource,
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
+    private readonly policyService: PolicyService,
   ) {}
 
   async borrowBook(dto: BorrowBookDto) {
@@ -40,9 +42,21 @@ export class TransactionsService {
       if (bookItem.status !== BookStatus.AVAILABLE)
         throw new BadRequestException('Buku sedang tidak tersedia');
 
+      const policy = await this.policyService.getPolicy();
+
+      // Cek kuota pinjam aktif user (returned_at IS NULL)
+      const activeCount = await queryRunner.manager.count(Transaction, {
+        where: { user: { id: dto.user_id }, returned_at: IsNull() },
+      });
+      if (activeCount >= policy.max_books_per_user) {
+        throw new BadRequestException(
+          `Sudah mencapai batas maksimal ${policy.max_books_per_user} buku dipinjam`,
+        );
+      }
+
       // 2. Buat record transaksi
       const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 7); // Default pinjam 7 hari
+      dueDate.setDate(dueDate.getDate() + policy.loan_duration_days);
 
       const transaction = queryRunner.manager.create(Transaction, {
         user: { id: dto.user_id },
@@ -106,7 +120,8 @@ export class TransactionsService {
       // 3. Hitung denda jika terlambat
       const returnDate = new Date();
       let fineAmount = 0;
-      const dailyFine = 5000; // Denda Rp 5.000 per hari
+      const policy = await this.policyService.getPolicy();
+      const dailyFine = policy.fine_per_day;
 
       // Denda dihitung per hari kalender: normalkan kedua tanggal ke awal hari
       // (strip jam-menit-detik) supaya keterlambatan beberapa jam di hari yang

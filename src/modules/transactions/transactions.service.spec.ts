@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { Transaction } from './entities/transaction.entity';
+import { PolicyService } from '../policy/policy.service';
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
@@ -13,7 +14,12 @@ describe('TransactionsService', () => {
     commitTransaction: jest.Mock;
     rollbackTransaction: jest.Mock;
     release: jest.Mock;
-    manager: { findOne: jest.Mock; create: jest.Mock; save: jest.Mock };
+    manager: {
+      findOne: jest.Mock;
+      create: jest.Mock;
+      save: jest.Mock;
+      count: jest.Mock;
+    };
   };
   let dataSource: { createQueryRunner: jest.Mock };
   let transactionRepository: {
@@ -32,6 +38,7 @@ describe('TransactionsService', () => {
         findOne: jest.fn(),
         create: jest.fn((_entity, data) => data),
         save: jest.fn((data) => Promise.resolve(data)),
+        count: jest.fn().mockResolvedValue(0),
       },
     };
 
@@ -51,6 +58,17 @@ describe('TransactionsService', () => {
         {
           provide: getRepositoryToken(Transaction),
           useValue: transactionRepository,
+        },
+        {
+          provide: PolicyService,
+          useValue: {
+            getPolicy: jest.fn().mockResolvedValue({
+              id: 1,
+              fine_per_day: 5000,
+              loan_duration_days: 7,
+              max_books_per_user: 3,
+            }),
+          },
         },
       ],
     }).compile();
@@ -130,6 +148,23 @@ describe('TransactionsService', () => {
       expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
       expect(queryRunner.commitTransaction).not.toHaveBeenCalled();
       expect(queryRunner.release).toHaveBeenCalledTimes(1);
+    });
+
+    it('menolak bila user sudah mencapai max_books_per_user', async () => {
+      // policy.max_books_per_user = 3; simulasikan 3 pinjaman aktif
+      queryRunner.manager.findOne.mockResolvedValueOnce({
+        id: 10,
+        barcode: 'B001',
+        status: 'AVAILABLE',
+      });
+      queryRunner.manager.count.mockResolvedValueOnce(3);
+
+      await expect(
+        service.borrowBook({ barcode: 'B001', user_id: 5 }),
+      ).rejects.toThrow(/maksimal/i);
+
+      expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
+      expect(queryRunner.commitTransaction).not.toHaveBeenCalled();
     });
   });
 
