@@ -18,8 +18,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const user = await this.usersService.findById(payload.sub);
-    if (!user) {
+    // Token valid secara kriptografis, tapi user-nya bisa saja sudah dihapus.
+    // findById melempar NotFoundException (404) dalam kasus itu; untuk
+    // autentikasi hal itu harus jadi 401, bukan membocorkan 404 ke klien.
+    let user: Awaited<ReturnType<UsersService['findById']>>;
+    try {
+      user = await this.usersService.findById(payload.sub);
+    } catch {
       throw new UnauthorizedException('User no longer exists');
     }
     return { id: user.id, email: user.email, role: user.role };

@@ -8,6 +8,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -33,6 +34,8 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Login dan dapatkan access token' })
   @ApiResponseWrapped()
+  // Anti brute-force: maks 5 percobaan / 15 menit per IP.
+  @Throttle({ default: { limit: 5, ttl: 900000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
