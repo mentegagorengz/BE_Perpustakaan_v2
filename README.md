@@ -1,159 +1,219 @@
-# 📚 Perpustakaan API v2
+# Perpustakaan API v2
 
-REST API untuk sistem manajemen perpustakaan yang dibangun dengan [NestJS](https://nestjs.com/), TypeORM, dan PostgreSQL.
+REST API manajemen perpustakaan — NestJS, TypeORM, PostgreSQL.
 
-## 🏗️ Arsitektur
+## Arsitektur
 
 ```
 src/
-├── common/              # Shared utilities (guards, decorators, filters, interceptors, DTOs)
-├── config/              # Konfigurasi database & environment
+├── common/                    # Shared utilities
+│   ├── decorators/            # @GetUser, @Roles, @ApiDocs
+│   ├── dto/                   # PaginationDto
+│   ├── enums/                 # RoleEnum, BookEnum
+│   ├── filters/               # Global exception filter
+│   ├── guards/                # RolesGuard
+│   ├── interceptors/          # Response wrapper + activity log
+│   ├── interfaces/            # ApiResponse, PaginatedResult
+│   └── transformers/          # NumericTransformer (decimal)
+├── config/                    # DB, Swagger, DataSource
+├── migrations/                # TypeORM migrations
 └── modules/
-    ├── auth/            # Autentikasi (register, login, JWT)
-    ├── users/           # Manajemen user & role
-    ├── books/           # Manajemen buku & eksemplar (book items)
-    ├── authors/         # Manajemen penulis
-    ├── categories/      # Manajemen kategori buku
-    ├── publishers/      # Manajemen penerbit
-    ├── languages/       # Manajemen bahasa
-    └── transactions/    # Peminjaman & pengembalian buku
+    ├── auth/                  # Register, login, JWT
+    ├── users/                 # Manajemen user & role
+    ├── books/                 # Buku & eksemplar fisik
+    ├── authors/               # Penulis
+    ├── categories/            # Kategori buku
+    ├── publishers/            # Penerbit
+    ├── languages/             # Bahasa
+    ├── transactions/          # Pinjam & kembali
+    ├── dashboard/             # Statistik ringkasan
+    ├── activity-logs/         # Audit trail
+    ├── articles/              # Artikel/berita
+    └── policy/                # Kebijakan (denda, durasi)
 ```
 
-## ✨ Fitur
+## Fitur
 
-- **Autentikasi & Otorisasi** — Register, Login dengan JWT, Role-based access control (`SUPER_ADMIN`, `STAFF`, `USER`)
-- **Manajemen Buku** — CRUD buku (metadata), manajemen eksemplar fisik (barcode, status, kondisi)
-- **Manajemen Master Data** — CRUD untuk penulis, kategori, penerbit, dan bahasa
-- **Transaksi Peminjaman** — Pinjam buku, kembalikan buku, hitung denda otomatis (Rp 5.000/hari)
-- **Paginasi & Pencarian** — Semua endpoint list mendukung pagination dan search
-- **Response Konsisten** — Format response seragam `{ statusCode, message, data }` via global interceptor & exception filter
+- **Auth & RBAC** — Register, login JWT, role: `SUPER_ADMIN` / `STAFF` / `USER`
+- **Buku** — CRUD metadata + manajemen eksemplar fisik (barcode, status, kondisi)
+- **Master data** — CRUD penulis, kategori, penerbit, bahasa
+- **Transaksi** — Pinjam, kembali, denda otomatis (Rp 5.000/hari), pessimistic lock
+- **Dashboard** — Ringkasan statistik (buku, user, transaksi)
+- **Activity logs** — Audit trail otomatis via global interceptor
+- **Articles** — CRUD artikel/berita
+- **Policy** — Konfigurasi denda & durasi pinjam (dapat diubah runtime)
+- **Pagination & search** — Semua endpoint list
+- **Response seragam** — `{ statusCode, message, data }` global
+- **Swagger/OpenAPI** — Dokumentasi interaktif di `/api/docs`
+- **Rate limiting** — 100 request/menit global
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Teknologi | Keterangan |
 |-----------|------------|
-| [NestJS](https://nestjs.com/) v11 | Framework backend |
-| [TypeORM](https://typeorm.io/) v0.3 | ORM untuk PostgreSQL |
-| [PostgreSQL](https://www.postgresql.org/) | Database |
-| [Passport + JWT](http://www.passportjs.org/) | Autentikasi |
-| [class-validator](https://github.com/typestack/class-validator) | Validasi DTO |
-| [bcrypt](https://github.com/kelektiv/node.bcrypt.js) | Hashing password |
+| NestJS v11 | Framework |
+| TypeORM 0.3 | ORM |
+| PostgreSQL 16 | Database |
+| Passport + JWT | Autentikasi |
+| class-validator | Validasi DTO |
+| bcrypt | Hashing password |
+| Swagger | Dokumentasi API |
+| Jest | Testing |
 
-## 📋 Prasyarat
+## Prasyarat
 
-- Node.js >= 20.0.0
-- npm >= 10.0.0
-- PostgreSQL
+- Node.js >= 20
+- npm >= 10
+- PostgreSQL (atau Docker)
 
-## 🚀 Instalasi & Setup
+## Setup
 
-1. **Clone repository**
+1. **Clone**
    ```bash
-   git clone https://github.com/<username>/be-perpustakaan.v2.git
+   git clone <repo-url>
    cd be-perpustakaan.v2
    ```
 
-2. **Install dependencies**
+2. **Install**
    ```bash
    npm install
    ```
 
-3. **Konfigurasi environment** — Buat file `.env` di root project:
+3. **Env** — Copy `.env.example` ke `.env`:
    ```env
    DB_HOST=localhost
    DB_PORT=5432
-   DB_USER=postgres
-   DB_PASSWORD=your_password
+   DB_USER=perpustakaan
+   DB_PASSWORD=change_me
    DB_NAME=perpustakaan
+   DB_SYNC=false
 
-   JWT_SECRET=your_jwt_secret
+   JWT_SECRET=change_me_to_a_long_random_string
    JWT_EXPIRES_IN=1d
 
+   CORS_ORIGIN=
    PORT=3000
    ```
 
-4. **Jalankan aplikasi**
+4. **Database** — Lewat Docker:
    ```bash
-   # development (watch mode)
-   npm run start:dev
+   docker compose up -d
+   ```
+   Atau pakai PostgreSQL lokal.
 
-   # production
-   npm run build
-   npm run start:prod
+5. **Migrasi**
+   ```bash
+   npm run migration:run
    ```
 
-5. **Akses API** di `http://localhost:3000/api/v1`
+6. **Jalankan**
+   ```bash
+   npm run start:dev
+   ```
 
-## 📡 API Endpoints
+   Akses: `http://localhost:3000/api/v1`  
+   Swagger: `http://localhost:3000/api/docs`
+
+## Scripts
+
+| Script | Fungsi |
+|--------|--------|
+| `npm run start:dev` | Development (watch) |
+| `npm run build` | Build |
+| `npm run start:prod` | Produksi |
+| `npm run test` | Unit test |
+| `npm run test:e2e` | E2E test |
+| `npm run test:cov` | Coverage |
+| `npm run lint` | ESLint |
+| `npm run migration:run` | Jalankan migrasi |
+| `npm run migration:generate --name=Nama` | Generate migrasi baru |
+| `npm run migration:revert` | Rollback migrasi |
+| `npm run openapi:generate` | Generate openapi.json |
+
+## API Endpoints
+
+Semua endpoint di-prefix `/api/v1`.
 
 ### Auth
-| Method | Endpoint | Akses | Keterangan |
-|--------|----------|-------|------------|
-| POST | `/api/v1/auth/register` | Public | Register user baru |
-| POST | `/api/v1/auth/login` | Public | Login, mendapat access token |
-| GET | `/api/v1/auth/profile` | Authenticated | Lihat profil user yang login |
+| Method | Path | Akses |
+|--------|------|-------|
+| POST | `/auth/register` | Public |
+| POST | `/auth/login` | Public |
+| GET | `/auth/profile` | Authenticated |
 
 ### Users
-| Method | Endpoint | Akses | Keterangan |
-|--------|----------|-------|------------|
-| GET | `/api/v1/users` | SUPER_ADMIN, STAFF | List semua user (paginated) |
-| GET | `/api/v1/users/:id` | SUPER_ADMIN, STAFF | Detail user |
-| PATCH | `/api/v1/users/:id/role` | SUPER_ADMIN | Update role/kategori user |
-| DELETE | `/api/v1/users/:id` | SUPER_ADMIN | Hapus user |
+| Method | Path | Akses |
+|--------|------|-------|
+| GET | `/users` | SUPER_ADMIN, STAFF |
+| GET | `/users/:id` | SUPER_ADMIN, STAFF |
+| PATCH | `/users/:id/role` | SUPER_ADMIN |
+| DELETE | `/users/:id` | SUPER_ADMIN |
 
 ### Books
-| Method | Endpoint | Akses | Keterangan |
-|--------|----------|-------|------------|
-| GET | `/api/v1/books` | Public | List semua buku (paginated) |
-| GET | `/api/v1/books/:id` | Public | Detail buku beserta items |
-| POST | `/api/v1/books` | SUPER_ADMIN, STAFF | Tambah buku baru |
-| PATCH | `/api/v1/books/:id` | SUPER_ADMIN, STAFF | Update buku |
-| DELETE | `/api/v1/books/:id` | SUPER_ADMIN | Hapus buku |
-| POST | `/api/v1/books/items` | SUPER_ADMIN, STAFF | Tambah eksemplar buku |
-| GET | `/api/v1/books/:id/items` | Public | List eksemplar sebuah buku |
+| Method | Path | Akses |
+|--------|------|-------|
+| GET | `/books` | Public |
+| GET | `/books/:id` | Public |
+| POST | `/books` | SUPER_ADMIN, STAFF |
+| PATCH | `/books/:id` | SUPER_ADMIN, STAFF |
+| DELETE | `/books/:id` | SUPER_ADMIN |
+| POST | `/books/items` | SUPER_ADMIN, STAFF |
+| GET | `/books/:id/items` | Public |
 
 ### Authors / Categories / Publishers / Languages
-| Method | Endpoint | Akses | Keterangan |
-|--------|----------|-------|------------|
-| GET | `/api/v1/{resource}` | Public | List (paginated) |
-| GET | `/api/v1/{resource}/:id` | Public | Detail |
-| POST | `/api/v1/{resource}` | SUPER_ADMIN, STAFF | Tambah baru |
-| PATCH | `/api/v1/{resource}/:id` | SUPER_ADMIN, STAFF | Update |
-| DELETE | `/api/v1/{resource}/:id` | SUPER_ADMIN | Hapus |
+| Method | Path | Akses |
+|--------|------|-------|
+| GET | `/{resource}` | Public |
+| GET | `/{resource}/:id` | Public |
+| POST | `/{resource}` | SUPER_ADMIN, STAFF |
+| PATCH | `/{resource}/:id` | SUPER_ADMIN, STAFF |
+| DELETE | `/{resource}/:id` | SUPER_ADMIN |
 
 ### Transactions
-| Method | Endpoint | Akses | Keterangan |
-|--------|----------|-------|------------|
-| POST | `/api/v1/transactions/borrow` | Authenticated | Pinjam buku |
-| PATCH | `/api/v1/transactions/return/:barcode` | SUPER_ADMIN, STAFF | Kembalikan buku |
-| GET | `/api/v1/transactions` | SUPER_ADMIN, STAFF | Riwayat semua transaksi |
-| GET | `/api/v1/transactions/my-history` | Authenticated | Riwayat transaksi sendiri |
+| Method | Path | Akses |
+|--------|------|-------|
+| POST | `/transactions/borrow` | Authenticated |
+| PATCH | `/transactions/return/:barcode` | SUPER_ADMIN, STAFF |
+| GET | `/transactions` | SUPER_ADMIN, STAFF |
+| GET | `/transactions/my-history` | Authenticated |
 
-## 🧪 Testing
+### Dashboard
+| Method | Path | Akses |
+|--------|------|-------|
+| GET | `/dashboard` | SUPER_ADMIN, STAFF |
 
-```bash
-# unit tests
-npm run test
+### Activity Logs
+| Method | Path | Akses |
+|--------|------|-------|
+| GET | `/activity-logs` | SUPER_ADMIN |
 
-# e2e tests
-npm run test:e2e
+### Articles
+| Method | Path | Akses |
+|--------|------|-------|
+| GET | `/articles` | Public |
+| GET | `/articles/:id` | Public |
+| POST | `/articles` | SUPER_ADMIN, STAFF |
+| PATCH | `/articles/:id` | SUPER_ADMIN, STAFF |
+| DELETE | `/articles/:id` | SUPER_ADMIN |
 
-# test coverage
-npm run test:cov
-```
+### Policy
+| Method | Path | Akses |
+|--------|------|-------|
+| GET | `/policy` | Public |
+| PATCH | `/policy` | SUPER_ADMIN |
 
-## 📁 Struktur Role
+## Role & Akses
 
-| Role | Hak Akses |
-|------|-----------|
-| `SUPER_ADMIN` | Full access (CRUD semua resource, manage role, hapus data) |
-| `STAFF` | Manage buku, master data, proses pengembalian |
-| `USER` | Pinjam buku, lihat riwayat sendiri, lihat katalog |
+| Role | Hak |
+|------|-----|
+| `SUPER_ADMIN` | Full access |
+| `STAFF` | Kelola buku, master data, pengembalian |
+| `USER` | Pinjam buku, riwayat sendiri, katalog |
 
-## 📝 Kategori User
+## Kategori User
 
 `STUDENT` · `LECTURER` · `LIBRARY_STAFF` · `PUBLIC`
 
-## 📄 License
+## License
 
-[MIT](https://opensource.org/licenses/MIT)
+MIT
