@@ -31,7 +31,10 @@ export function ApiNotFound(resource = 'Resource') {
  * 200 dengan envelope `{ statusCode, message, data }`. Bila `model` diberikan,
  * `data` di-ref ke schema model itu; tanpa model, `data` generik (object).
  */
-export function ApiResponseWrapped(model?: Type<unknown>, description = 'Success') {
+export function ApiResponseWrapped(
+  model?: Type<unknown>,
+  description = 'Success',
+) {
   const data = model
     ? { $ref: getSchemaPath(model) }
     : { type: 'object' as const };

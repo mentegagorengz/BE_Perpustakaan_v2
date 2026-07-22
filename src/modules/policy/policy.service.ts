@@ -13,7 +13,10 @@ export class PolicyService {
 
   // Singleton: selalu baris pertama; buat default bila belum ada.
   async getPolicy(): Promise<Policy> {
-    let policy = await this.policyRepository.findOne({ where: {}, order: { id: 'ASC' } });
+    let policy = await this.policyRepository.findOne({
+      where: {},
+      order: { id: 'ASC' },
+    });
     if (!policy) {
       policy = this.policyRepository.create({
         fine_per_day: 5000,

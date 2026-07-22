@@ -8,7 +8,6 @@ import { ActivityLogsService } from './modules/activity-logs/activity-logs.servi
 import { ActivityLogInterceptor } from './common/interceptors/activity-logs.interceptor';
 import { buildOpenApiDocument } from './config/swagger.config';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 

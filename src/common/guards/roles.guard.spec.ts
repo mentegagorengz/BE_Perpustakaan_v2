@@ -44,9 +44,9 @@ describe('RolesGuard', () => {
       SystemRole.STAFF,
     ]);
 
-    expect(
-      guard.canActivate(buildContext({ role: SystemRole.STAFF })),
-    ).toBe(true);
+    expect(guard.canActivate(buildContext({ role: SystemRole.STAFF }))).toBe(
+      true,
+    );
   });
 
   it('denies the request when the user role is not among the required roles', () => {
@@ -60,9 +60,7 @@ describe('RolesGuard', () => {
   it('fails closed (denies, does not throw) when no user is attached to the request', () => {
     reflector.getAllAndOverride.mockReturnValue([SystemRole.SUPER_ADMIN]);
 
-    expect(() =>
-      guard.canActivate(buildContext(undefined)),
-    ).not.toThrow();
+    expect(() => guard.canActivate(buildContext(undefined))).not.toThrow();
     expect(guard.canActivate(buildContext(undefined))).toBe(false);
   });
 });

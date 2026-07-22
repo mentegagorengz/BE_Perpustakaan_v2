@@ -145,9 +145,7 @@ describe('ArticlesService', () => {
       expect(repo.save).toHaveBeenCalledWith(
         expect.objectContaining({ id: 4, title: 'New', content: 'old' }),
       );
-      expect(result).toEqual(
-        expect.objectContaining({ id: 4, title: 'New' }),
-      );
+      expect(result).toEqual(expect.objectContaining({ id: 4, title: 'New' }));
     });
 
     it('throws NotFoundException when updating a missing article', async () => {

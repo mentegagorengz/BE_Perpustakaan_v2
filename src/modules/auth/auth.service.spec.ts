@@ -1,8 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  ConflictException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
@@ -114,7 +111,9 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(null);
       usersService.findByIdentificationNumber.mockResolvedValue(null);
 
-      const genSaltSpy = mockedBcrypt.genSalt.mockResolvedValue('salt' as never);
+      const genSaltSpy = mockedBcrypt.genSalt.mockResolvedValue(
+        'salt' as never,
+      );
       const hashSpy = mockedBcrypt.hash.mockResolvedValue(
         'hashed-password' as never,
       );

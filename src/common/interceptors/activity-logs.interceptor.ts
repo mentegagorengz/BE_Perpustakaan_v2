@@ -39,7 +39,7 @@ export class ActivityLogInterceptor implements NestInterceptor {
     ip: string,
   ) {
     const user = request.user;
-    let action = url.includes('auth/login')
+    const action = url.includes('auth/login')
       ? 'LOGIN'
       : method === 'POST'
         ? 'CREATE'
