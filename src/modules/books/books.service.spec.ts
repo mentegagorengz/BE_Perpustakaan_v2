@@ -233,9 +233,7 @@ describe('BooksService', () => {
       expect(bookRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ id: 4, title: 'New', description: 'old' }),
       );
-      expect(result).toEqual(
-        expect.objectContaining({ id: 4, title: 'New' }),
-      );
+      expect(result).toEqual(expect.objectContaining({ id: 4, title: 'New' }));
     });
 
     it('sets category, publisher and language relations when their ids are provided', async () => {
@@ -275,9 +273,9 @@ describe('BooksService', () => {
       bookRepo.findOne.mockResolvedValue({ id: 4 });
       authorRepo.findBy.mockResolvedValue([{ id: 1 }]);
 
-      await expect(
-        service.update(4, { author_ids: [1, 2] }),
-      ).rejects.toThrow(new NotFoundException('One or more authors not found'));
+      await expect(service.update(4, { author_ids: [1, 2] })).rejects.toThrow(
+        new NotFoundException('One or more authors not found'),
+      );
       expect(bookRepo.save).not.toHaveBeenCalled();
     });
 

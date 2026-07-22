@@ -96,7 +96,12 @@ describe('Transactions (e2e)', () => {
     const book = await dataSource.query(
       `INSERT INTO books (title, category_id, publisher_id, language_id)
        VALUES ($1, $2, $3, $4) RETURNING id`,
-      [`E2E Book ${unique}`, seeded.categoryId, seeded.publisherId, seeded.languageId],
+      [
+        `E2E Book ${unique}`,
+        seeded.categoryId,
+        seeded.publisherId,
+        seeded.languageId,
+      ],
     );
     seeded.bookId = book[0].id;
     const item = await dataSource.query(
@@ -109,16 +114,19 @@ describe('Transactions (e2e)', () => {
 
   afterAll(async () => {
     if (dataSource?.isInitialized) {
-      await dataSource.query('DELETE FROM transactions WHERE book_item_id = $1', [
-        seeded.bookItemId,
-      ]);
+      await dataSource.query(
+        'DELETE FROM transactions WHERE book_item_id = $1',
+        [seeded.bookItemId],
+      );
       await dataSource.query('DELETE FROM book_items WHERE id = $1', [
         seeded.bookItemId,
       ]);
       await dataSource.query('DELETE FROM book_authors WHERE book_id = $1', [
         seeded.bookId,
       ]);
-      await dataSource.query('DELETE FROM books WHERE id = $1', [seeded.bookId]);
+      await dataSource.query('DELETE FROM books WHERE id = $1', [
+        seeded.bookId,
+      ]);
       await dataSource.query('DELETE FROM authors WHERE id = $1', [
         seeded.authorId,
       ]);

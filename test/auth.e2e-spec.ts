@@ -38,9 +38,10 @@ describe('Auth (e2e)', () => {
 
   afterAll(async () => {
     if (dataSource?.isInitialized) {
-      await dataSource.query('DELETE FROM users WHERE identification_number = $1', [
-        user.identification_number,
-      ]);
+      await dataSource.query(
+        'DELETE FROM users WHERE identification_number = $1',
+        [user.identification_number],
+      );
     }
     await app?.close();
   });

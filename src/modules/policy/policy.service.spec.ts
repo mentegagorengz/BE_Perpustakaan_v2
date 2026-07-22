@@ -28,7 +28,12 @@ describe('PolicyService', () => {
 
   it('getPolicy membuat default bila tabel kosong', async () => {
     repo.findOne.mockResolvedValue(null);
-    const def = { id: 1, fine_per_day: 5000, loan_duration_days: 7, max_books_per_user: 3 } as Policy;
+    const def = {
+      id: 1,
+      fine_per_day: 5000,
+      loan_duration_days: 7,
+      max_books_per_user: 3,
+    } as Policy;
     repo.create.mockReturnValue(def);
     repo.save.mockResolvedValue(def);
 
@@ -38,7 +43,12 @@ describe('PolicyService', () => {
   });
 
   it('update meng-merge field lalu save', async () => {
-    const existing = { id: 1, fine_per_day: 5000, loan_duration_days: 7, max_books_per_user: 3 } as Policy;
+    const existing = {
+      id: 1,
+      fine_per_day: 5000,
+      loan_duration_days: 7,
+      max_books_per_user: 3,
+    } as Policy;
     repo.findOne.mockResolvedValue(existing);
     repo.save.mockImplementation(async (p) => p as Policy);
 
