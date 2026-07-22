@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -13,6 +15,7 @@ import databaseConfig from './config/database.config';
 import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ArticlesModule } from './modules/articles/articles.module';
+import { PolicyModule } from './modules/policy/policy.module';
 
 @Module({
   imports: [
@@ -20,6 +23,8 @@ import { ArticlesModule } from './modules/articles/articles.module';
       isGlobal: true,
       load: [databaseConfig],
     }),
+    // Rate-limit global (default 100 req / menit / IP). Override ketat di /auth/login.
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
@@ -37,6 +42,11 @@ import { ArticlesModule } from './modules/articles/articles.module';
     TransactionsModule,
     DashboardModule,
     ArticlesModule,
+    PolicyModule,
+  ],
+  providers: [
+    // Terapkan ThrottlerGuard ke semua route secara global.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}
