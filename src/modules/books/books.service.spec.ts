@@ -1,12 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { In } from 'typeorm';
 import { BooksService } from './books.service';
 import { Book } from './entities/book.entity';
 import { BookItem } from './entities/book-item.entity';
 import { Author } from '../authors/entities/author.entity';
+import { Category } from '../categories/entities/category.entity';
+import { Publisher } from '../publishers/entities/publisher.entity';
+import { Language } from '../languages/entities/language.entity';
 import { CreateBookDto } from './dto/create-book.dto';
+import { DataSource } from 'typeorm';
 describe('BooksService', () => {
   let service: BooksService;
   let bookRepo: {
@@ -15,16 +19,22 @@ describe('BooksService', () => {
     findOne: jest.Mock;
     findOneBy: jest.Mock;
     remove: jest.Mock;
+    softDelete: jest.Mock;
     createQueryBuilder: jest.Mock;
   };
   let bookItemRepo: {
     create: jest.Mock;
     save: jest.Mock;
     find: jest.Mock;
+    softDelete: jest.Mock;
   };
   let authorRepo: {
     findBy: jest.Mock;
   };
+  let categoryRepo: { findBy: jest.Mock };
+  let publisherRepo: { findBy: jest.Mock };
+  let languageRepo: { findBy: jest.Mock };
+  let dataSource: { transaction: jest.Mock };
   let queryBuilder: {
     leftJoinAndSelect: jest.Mock;
     orderBy: jest.Mock;
@@ -50,6 +60,7 @@ describe('BooksService', () => {
       findOne: jest.fn(),
       findOneBy: jest.fn(),
       remove: jest.fn(),
+      softDelete: jest.fn(),
       createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
     };
 
@@ -57,10 +68,23 @@ describe('BooksService', () => {
       create: jest.fn(),
       save: jest.fn(),
       find: jest.fn(),
+      softDelete: jest.fn(),
     };
 
     authorRepo = {
       findBy: jest.fn(),
+    };
+    categoryRepo = { findBy: jest.fn() };
+    publisherRepo = { findBy: jest.fn() };
+    languageRepo = { findBy: jest.fn() };
+    const manager = {
+      create: jest.fn((entity: unknown, val: unknown) => val),
+      save: jest.fn(async (book: unknown) => book),
+    };
+    dataSource = {
+      transaction: jest.fn(
+        async (cb: (m: typeof manager) => Promise<unknown>) => cb(manager),
+      ),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -69,6 +93,10 @@ describe('BooksService', () => {
         { provide: getRepositoryToken(Book), useValue: bookRepo },
         { provide: getRepositoryToken(BookItem), useValue: bookItemRepo },
         { provide: getRepositoryToken(Author), useValue: authorRepo },
+        { provide: getRepositoryToken(Category), useValue: categoryRepo },
+        { provide: getRepositoryToken(Publisher), useValue: publisherRepo },
+        { provide: getRepositoryToken(Language), useValue: languageRepo },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
 
@@ -133,17 +161,66 @@ describe('BooksService', () => {
   });
 
   describe('createMany', () => {
-    it('creates and persists the batch of books', async () => {
-      const dtos = [{ title: 'A', category_id: 1, publisher_id: 1, language_id: 1, author_ids: [1] } as any, { title: 'B', category_id: 1, publisher_id: 1, language_id: 1, author_ids: [1] } as any];
-      const built = [{ id: 1 }, { id: 2 }];
-      bookRepo.create.mockReturnValue(built);
-      bookRepo.save.mockResolvedValue(built);
+    const dtos: CreateBookDto[] = [
+      {
+        title: 'A',
+        category_id: 1,
+        publisher_id: 1,
+        language_id: 1,
+        author_ids: [1, 2],
+      },
+      {
+        title: 'B',
+        category_id: 1,
+        publisher_id: 2,
+        language_id: 1,
+        author_ids: [2],
+      },
+    ];
+
+    it('menyimpan seluruh buku relasi + join dalam satu transaksi setelah batch validation', async () => {
+      categoryRepo.findBy.mockResolvedValue([{ id: 1 }]);
+      publisherRepo.findBy.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      languageRepo.findBy.mockResolvedValue([{ id: 1 }]);
+      authorRepo.findBy.mockResolvedValue([{ id: 1 }, { id: 2 }]);
 
       const result = await service.createMany(dtos);
 
-      expect(bookRepo.create).toHaveBeenCalledWith(dtos);
-      expect(bookRepo.save).toHaveBeenCalledWith(built);
-      expect(result).toBe(built);
+      expect(categoryRepo.findBy).toHaveBeenCalledWith({ id: In([1]) });
+      expect(publisherRepo.findBy).toHaveBeenCalledWith({ id: In([1, 2]) });
+      expect(authorRepo.findBy).toHaveBeenCalledWith({ id: In([1, 2]) });
+      expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+      expect(result).toHaveLength(2);
+    });
+
+    it('tidak memanggil query per-barang (anti N+1): 1 query per tabel relasi', async () => {
+      categoryRepo.findBy.mockResolvedValue([{ id: 1 }]);
+      publisherRepo.findBy.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      languageRepo.findBy.mockResolvedValue([{ id: 1 }]);
+      authorRepo.findBy.mockResolvedValue([{ id: 1 }, { id: 2 }]);
+
+      await service.createMany(dtos);
+
+      expect(categoryRepo.findBy).toHaveBeenCalledTimes(1);
+      expect(publisherRepo.findBy).toHaveBeenCalledTimes(1);
+      expect(languageRepo.findBy).toHaveBeenCalledTimes(1);
+      expect(authorRepo.findBy).toHaveBeenCalledTimes(1);
+    });
+
+    it('rollback atomic: relasi hilang → BadRequestException, transaksi TIDAK dijalankan', async () => {
+      categoryRepo.findBy.mockResolvedValue([{ id: 999 }]);
+
+      await expect(service.createMany(dtos)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(dataSource.transaction).not.toHaveBeenCalled();
+    });
+
+    it('mengembalikan array kosong bila payload kosong', async () => {
+      const result = await service.createMany([]);
+
+      expect(result).toEqual([]);
+      expect(dataSource.transaction).not.toHaveBeenCalled();
     });
   });
 
@@ -289,21 +366,25 @@ describe('BooksService', () => {
   });
 
   describe('remove', () => {
-    it('removes the existing book', async () => {
+    it('soft-deletes the book and its items it exists', async () => {
       const existing = { id: 6 };
       bookRepo.findOne.mockResolvedValue(existing);
-      bookRepo.remove.mockResolvedValue(undefined);
+      bookRepo.softDelete.mockResolvedValue({ affected: 1 } as never);
+      bookItemRepo.softDelete.mockResolvedValue({ affected: 1 } as never);
 
       await service.remove(6);
 
-      expect(bookRepo.remove).toHaveBeenCalledWith(existing);
+      expect(bookItemRepo.softDelete).toHaveBeenCalledWith({
+        book: { id: 6 },
+      });
+      expect(bookRepo.softDelete).toHaveBeenCalledWith(6);
     });
 
     it('throws NotFoundException when removing a missing book', async () => {
       bookRepo.findOne.mockResolvedValue(null);
 
       await expect(service.remove(99)).rejects.toThrow(NotFoundException);
-      expect(bookRepo.remove).not.toHaveBeenCalled();
+      expect(bookRepo.softDelete).not.toHaveBeenCalled();
     });
   });
 

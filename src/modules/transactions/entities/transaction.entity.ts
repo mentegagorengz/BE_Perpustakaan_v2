@@ -9,6 +9,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { BookItem } from '../../books/entities/book-item.entity';
 import { ColumnNumericTransformer } from '../../../common/transformers/numeric.transformer';
+import { TransactionStatus } from '../../../common/enums/book.enum';
 
 @Entity('transactions')
 export class Transaction {
@@ -41,6 +42,10 @@ export class Transaction {
   })
   fine_amount: number;
 
-  @Column({ default: 'BORROWED' })
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: TransactionStatus,
+    default: TransactionStatus.BORROWED,
+  })
+  status: TransactionStatus;
 }

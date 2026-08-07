@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { FindOptionsWhere, Repository, Like } from 'typeorm';
 import { User } from './entities/user.entity';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PaginatedResult } from '../../common/interfaces/paginated-result.interface';
@@ -50,7 +50,7 @@ export class UsersService {
     const { page = 1, limit = 10, search } = paginationDto;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: FindOptionsWhere<User> = {};
     if (search) {
       where.full_name = Like(`%${search}%`);
     }
@@ -81,6 +81,6 @@ export class UsersService {
 
   async remove(id: number): Promise<void> {
     const user = await this.findById(id);
-    await this.userRepository.remove(user);
+    await this.userRepository.softDelete(user.id);
   }
 }

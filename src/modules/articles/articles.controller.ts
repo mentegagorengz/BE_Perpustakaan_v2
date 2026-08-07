@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -22,6 +23,8 @@ import {
   ApiNotFound,
   ApiResponseWrapped,
 } from '../../common/decorators/api-docs.decorator';
+
+type AuthenticatedRequest = Request & { user: { id: number } };
 
 @ApiTags('Articles')
 @ApiResponseWrapped()
@@ -48,7 +51,10 @@ export class ArticlesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiOperation({ summary: 'Membuat berita baru (Admin/Staff Only)' })
-  create(@Body() createArticleDto: CreateArticleDto, @Req() req) {
+  create(
+    @Body() createArticleDto: CreateArticleDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.articlesService.create(createArticleDto, req.user);
   }
 
@@ -81,7 +87,10 @@ export class ArticlesController {
   @ApiOperation({
     summary: 'Membuat banyak berita sekaligus (Admin/Staff Only)',
   })
-  createMany(@Body() createArticlesDto: CreateArticleDto[], @Req() req) {
+  createMany(
+    @Body() createArticlesDto: CreateArticleDto[],
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.articlesService.createMany(createArticlesDto, req.user);
   }
 }

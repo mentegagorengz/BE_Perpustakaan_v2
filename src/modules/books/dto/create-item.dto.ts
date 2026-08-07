@@ -24,7 +24,7 @@ export class CreateBookItemDto {
   @IsEnum(BookStatus)
   status?: BookStatus;
 
-  @ApiPropertyOptional({ enum: BookCondition, example: BookCondition.BAIK })
+  @ApiPropertyOptional({ enum: BookCondition, example: BookCondition.GOOD })
   @IsOptional()
   @IsEnum(BookCondition)
   condition?: BookCondition;

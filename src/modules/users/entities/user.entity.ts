@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { SystemRole, UserCategory } from '../../../common/enums/role.enum';
 
@@ -12,10 +13,12 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  // Unik hanya untuk data aktif (deleted_at IS NULL) via partial unique index
+  // di migration — user terhapus boleh mendaftar ulang.
+  @Column()
   identification_number: string;
 
-  @Column({ unique: true })
+  @Column()
   email: string;
 
   @Column({ select: false })
@@ -43,4 +46,7 @@ export class User {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt?: Date;
 }

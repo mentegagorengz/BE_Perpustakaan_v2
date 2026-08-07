@@ -5,7 +5,13 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
+
+interface ExceptionPayload {
+  statusCode?: number;
+  message?: unknown;
+  error?: string;
+}
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -23,20 +29,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getResponse()
         : 'Internal server error';
 
+    const payload: ExceptionPayload | null =
+      typeof exceptionResponse === 'object' && exceptionResponse !== null
+        ? (exceptionResponse as ExceptionPayload)
+        : null;
+
     const message =
       typeof exceptionResponse === 'string'
         ? exceptionResponse
-        : (exceptionResponse as any).message || 'Internal server error';
-
-    const error =
-      typeof exceptionResponse === 'object'
-        ? (exceptionResponse as any).error
-        : undefined;
+        : (payload?.message ?? 'Internal server error');
 
     response.status(status).json({
       statusCode: status,
-      message: Array.isArray(message) ? message : message,
-      error: error,
+      message,
+      error: payload?.error,
       timestamp: new Date().toISOString(),
     });
   }

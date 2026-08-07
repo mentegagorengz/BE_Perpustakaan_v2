@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
+import { buildDatabaseConfig } from './database.config';
 
 /**
  * DataSource khusus untuk TypeORM CLI (generate/run/revert migration).
@@ -11,12 +12,7 @@ import { DataSource } from 'typeorm';
  * .env via `node --env-file=.env` (lihat script di package.json).
  */
 export default new DataSource({
-  type: 'postgres',
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT ?? '5432', 10),
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  ...buildDatabaseConfig(),
   entities: [join(__dirname, '..', '**', '*.entity.js')],
   migrations: [join(__dirname, '..', 'migrations', '*.js')],
   synchronize: false,

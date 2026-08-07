@@ -1,12 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../users/entities/user.entity';
+import { RefreshSession } from './entities/refresh-session.entity';
 import { SystemRole, UserCategory } from '../../common/enums/role.enum';
 
 jest.mock('bcrypt');
@@ -20,8 +24,16 @@ describe('AuthService', () => {
     findByIdentificationNumber: jest.Mock;
     findByEmailWithPassword: jest.Mock;
     create: jest.Mock;
+    findById: jest.Mock;
   };
   let jwtService: { signAsync: jest.Mock };
+  let refreshSessionRepository: {
+    save: jest.Mock;
+    create: jest.Mock;
+    findOne: jest.Mock;
+    findOneBy: jest.Mock;
+    createQueryBuilder: jest.Mock;
+  };
 
   const registerDto: RegisterDto = {
     identification_number: '1234567890',
@@ -51,9 +63,26 @@ describe('AuthService', () => {
       findByIdentificationNumber: jest.fn(),
       findByEmailWithPassword: jest.fn(),
       create: jest.fn(),
+      findById: jest.fn(),
     };
     jwtService = {
       signAsync: jest.fn(),
+    };
+    refreshSessionRepository = {
+      save: jest.fn().mockImplementation(async (entity) => entity),
+      create: jest.fn((data) => data),
+      findOne: jest.fn(),
+      findOneBy: jest.fn(),
+      createQueryBuilder: jest.fn(),
+    };
+
+    const mockManager = {
+      getRepository: jest.fn(() => refreshSessionRepository),
+    };
+    const dataSource = {
+      transaction: jest.fn(async (fn: (manager: unknown) => Promise<unknown>) =>
+        fn(mockManager),
+      ),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -61,6 +90,11 @@ describe('AuthService', () => {
         AuthService,
         { provide: UsersService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
+        { provide: DataSource, useValue: dataSource },
+        {
+          provide: getRepositoryToken(RefreshSession),
+          useValue: refreshSessionRepository,
+        },
       ],
     }).compile();
 
@@ -159,7 +193,7 @@ describe('AuthService', () => {
       expect(jwtService.signAsync).not.toHaveBeenCalled();
     });
 
-    it('returns an access token and user payload on success', async () => {
+    it('returns tokens and user payload on success, persisting a hashed session', async () => {
       const user = buildUser();
       usersService.findByEmailWithPassword.mockResolvedValue(user);
       mockedBcrypt.compare.mockResolvedValue(true as never);
@@ -172,15 +206,122 @@ describe('AuthService', () => {
         email: user.email,
         role: user.role,
       });
-      expect(result).toEqual({
-        access_token: 'signed-jwt-token',
-        user: {
-          id: user.id,
-          full_name: user.full_name,
-          role: user.role,
-        },
+      expect(result.accessToken).toBe('signed-jwt-token');
+      expect(result.refreshToken).toEqual(expect.any(String));
+      expect(result.user).toEqual({
+        id: user.id,
+        full_name: user.full_name,
+        role: user.role,
       });
       expect(result.user).not.toHaveProperty('password');
+
+      // Sesi refresh disimpan sebagai hash SHA-256, bukan token mentah.
+      expect(refreshSessionRepository.create).toHaveBeenCalled();
+      const created = refreshSessionRepository.create.mock.calls[0][0];
+      expect(created.tokenHash).toMatch(/^[a-f0-9]{64}$/i);
+      expect(created.tokenHash).not.toBe(result.refreshToken);
+      expect(created.user).toEqual({ id: user.id });
+      expect(refreshSessionRepository.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('rotateRefreshTokenWithGracePeriod', () => {
+    const buildSession = (overrides: Partial<RefreshSession> = {}): any => ({
+      id: 'session-1',
+      tokenHash: 'a'.repeat(64),
+      previousTokenHash: null,
+      user: { id: 1 },
+      expiresAt: new Date(Date.now() + 60_000),
+      graceExpiresAt: null,
+      revokedAt: null,
+      ...overrides,
+    });
+
+    const mockRawUser = (
+      repo: {
+        createQueryBuilder: jest.Mock;
+      },
+      userId = 1,
+    ) => {
+      repo.createQueryBuilder.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue({ userId }),
+      });
+    };
+
+    it('throws when the token does not match any session', async () => {
+      refreshSessionRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.rotateRefreshTokenWithGracePeriod('unknown-token'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('throws when the session was revoked', async () => {
+      refreshSessionRepository.findOne.mockResolvedValue(
+        buildSession({ revokedAt: new Date() }),
+      );
+
+      await expect(
+        service.rotateRefreshTokenWithGracePeriod('unknown-token'),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(refreshSessionRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('throws when the session is expired and revokes it', async () => {
+      refreshSessionRepository.findOne.mockResolvedValue(
+        buildSession({
+          expiresAt: new Date(Date.now() - 1_000),
+        }),
+      );
+
+      await expect(
+        service.rotateRefreshTokenWithGracePeriod('unknown-token'),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(refreshSessionRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ revokedAt: expect.any(Date) }),
+      );
+    });
+
+    it('rotates to a new refresh token and moves the previous hash into the grace window', async () => {
+      refreshSessionRepository.findOne.mockResolvedValue(buildSession());
+      mockRawUser(refreshSessionRepository, 1);
+      usersService.findById.mockResolvedValue(buildUser());
+      jwtService.signAsync.mockResolvedValue('next-access-token');
+
+      const token = 'current-refresh-token';
+      const result = await service.rotateRefreshTokenWithGracePeriod(token);
+
+      expect(jwtService.signAsync).toHaveBeenCalled();
+      expect(result.accessToken).toBe('next-access-token');
+      expect(result.refreshToken).not.toBe(token);
+
+      const saved = refreshSessionRepository.save.mock.calls.at(-1)[0];
+      expect(saved.tokenHash).not.toBe('a'.repeat(64));
+      expect(saved.previousTokenHash).toBe('a'.repeat(64));
+      expect(saved.graceExpiresAt).toEqual(expect.any(Date));
+    });
+
+    it('serves a parallel refresh from the grace window without rotating again', async () => {
+      const token = 'old-token-inside-grace-window';
+      const hashedToken = createHash('sha256').update(token).digest('hex');
+      refreshSessionRepository.findOne.mockResolvedValue(
+        buildSession({
+          tokenHash: 'b'.repeat(64),
+          previousTokenHash: hashedToken,
+          graceExpiresAt: new Date(Date.now() + 5_000),
+        }),
+      );
+      mockRawUser(refreshSessionRepository, 1);
+      usersService.findById.mockResolvedValue(buildUser());
+      jwtService.signAsync.mockResolvedValue('access-token');
+
+      const result = await service.rotateRefreshTokenWithGracePeriod(token);
+
+      expect(result.accessToken).toBe('access-token');
+      expect(result.refreshToken).toBe(token);
+      expect(refreshSessionRepository.save).not.toHaveBeenCalled();
     });
   });
 });

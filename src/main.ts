@@ -1,36 +1,30 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import { AppModule } from './app.module';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { SwaggerModule } from '@nestjs/swagger';
-import { ActivityLogsService } from './modules/activity-logs/activity-logs.service';
-import { ActivityLogInterceptor } from './common/interceptors/activity-logs.interceptor';
+import { AppModule } from './app.module';
 import { buildOpenApiDocument } from './config/swagger.config';
+import { validateEnvironment } from './config/env.validation';
 
 async function bootstrap() {
-  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-    throw new Error(
-      'JWT_SECRET must be set and at least 32 characters long in .env',
-    );
-  }
+  validateEnvironment(process.env);
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix('api/v1');
   app.use(helmet());
+  app.use(cookieParser());
   app.set('trust proxy', 1);
 
   // Batasi origin ke daftar di CORS_ORIGIN (comma-separated).
   // - Bila diset: hanya origin tersebut yang diizinkan, boleh pakai credentials.
-  // - Bila tidak diset di production: fail-closed (tolak semua cross-origin),
-  //   supaya deploy yang lupa mengeset CORS_ORIGIN tidak diam-diam allow-all.
+  // - Bila tidak diset di production: fail-closed (tolak semua cross-origin).
   // - Bila tidak diset di non-production: allow-all TANPA credentials (dev lokal).
-  //   Wildcard tidak pernah digabung dengan credentials (dilarang spec CORS).
   const allowedOrigins = (process.env.CORS_ORIGIN ?? '')
     .split(',')
-    .map((o) => o.trim())
+    .map((origin) => origin.trim())
     .filter(Boolean);
 
   if (allowedOrigins.length > 0) {
@@ -40,10 +34,6 @@ async function bootstrap() {
   } else {
     app.enableCors({ origin: true });
   }
-
-  app.useGlobalInterceptors(new ResponseInterceptor());
-
-  app.useGlobalFilters(new AllExceptionsFilter());
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -56,9 +46,6 @@ async function bootstrap() {
     }),
   );
 
-  const activityLogsService = app.get(ActivityLogsService);
-  app.useGlobalInterceptors(new ActivityLogInterceptor(activityLogsService));
-
   const document = buildOpenApiDocument(app);
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
@@ -67,9 +54,10 @@ async function bootstrap() {
     },
   });
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT ?? 3000;
   await app.listen(port);
 
   console.log(`🚀 Application is running on: http://localhost:${port}/api/v1`);
 }
-bootstrap();
+
+void bootstrap();

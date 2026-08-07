@@ -305,6 +305,7 @@ describe('TransactionsService', () => {
       const data = [{ id: 1 }, { id: 2 }];
       const qb: any = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
+        setFindOptions: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
@@ -328,6 +329,7 @@ describe('TransactionsService', () => {
     it('menerapkan filter search bila diberikan', async () => {
       const qb: any = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
+        setFindOptions: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),

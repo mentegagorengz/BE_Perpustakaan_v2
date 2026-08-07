@@ -70,7 +70,9 @@ describe('Transactions (e2e)', () => {
       .post('/api/v1/auth/login')
       .send({ email: user.email, password: user.password })
       .expect(200);
-    token = loginRes.body.data.access_token;
+    const setCookie = loginRes.headers['set-cookie'] as unknown as string[];
+    const cookieMatch = /auth_token=([^;]+)/.exec(setCookie.join(';'));
+    token = cookieMatch ? cookieMatch[1] : '';
 
     // 2. Seed data referensi + buku + eksemplar langsung via DB (barcode unik).
     const cat = await dataSource.query(
@@ -106,7 +108,7 @@ describe('Transactions (e2e)', () => {
     seeded.bookId = book[0].id;
     const item = await dataSource.query(
       `INSERT INTO book_items (barcode, status, condition, book_id)
-       VALUES ($1, 'AVAILABLE', 'BAIK', $2) RETURNING id`,
+       VALUES ($1, 'AVAILABLE', 'GOOD', $2) RETURNING id`,
       [barcode, seeded.bookId],
     );
     seeded.bookItemId = item[0].id;
@@ -148,7 +150,7 @@ describe('Transactions (e2e)', () => {
     const res = await request(app.getHttpServer())
       .post('/api/v1/transactions/borrow')
       .set('Authorization', `Bearer ${token}`)
-      .send({ barcode, user_id: userId })
+      .send({ barcode })
       .expect(201);
 
     expect(res.body.data.message).toBe('Buku berhasil dipinjam');
@@ -164,7 +166,7 @@ describe('Transactions (e2e)', () => {
     await request(app.getHttpServer())
       .post('/api/v1/transactions/borrow')
       .set('Authorization', `Bearer ${token}`)
-      .send({ barcode, user_id: userId })
+      .send({ barcode })
       .expect(400);
   });
 
@@ -195,7 +197,7 @@ describe('Transactions (e2e)', () => {
     await request(app.getHttpServer())
       .post('/api/v1/transactions/borrow')
       .set('Authorization', `Bearer ${token}`)
-      .send({ barcode, user_id: userId })
+      .send({ barcode })
       .expect(201);
 
     // Set due_date ke 3 hari kalender lalu, jam 12:00 SIANG waktu lokal.

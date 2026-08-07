@@ -6,8 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Book } from './book.entity';
+import { BookStatus, BookCondition } from '../../../common/enums/book.enum';
 
 @Entity('book_items')
 export class BookItem {
@@ -19,17 +21,17 @@ export class BookItem {
 
   @Column({
     type: 'enum',
-    enum: ['AVAILABLE', 'RESERVED', 'BORROWED', 'LOST', 'DAMAGED'],
-    default: 'AVAILABLE',
+    enum: BookStatus,
+    default: BookStatus.AVAILABLE,
   })
-  status: string;
+  status: BookStatus;
 
   @Column({
     type: 'enum',
-    enum: ['BAIK', 'RUSAK_RINGAN', 'RUSAK_BERAT'],
-    default: 'BAIK',
+    enum: BookCondition,
+    default: BookCondition.GOOD,
   })
-  condition: string;
+  condition: BookCondition;
 
   @ManyToOne(() => Book, (book) => book.items, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'book_id' })
@@ -40,4 +42,7 @@ export class BookItem {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt?: Date;
 }
