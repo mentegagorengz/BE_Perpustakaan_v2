@@ -131,6 +131,7 @@
     },
     "/auth/login": {
       "post": {
+        "description": "Menyetel cookie `auth_token` (HttpOnly). Access token TIDAK ada di body; refreshToken ada di body untuk keperluan rotasi.",
         "operationId": "AuthController_login",
         "parameters": [],
         "requestBody": {
@@ -145,22 +146,21 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Login berhasil, cookie auth_token diset",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Success"
-                    },
+                  "example": {
+                    "statusCode": 200,
+                    "message": "Login successful",
                     "data": {
-                      "type": "object"
+                      "message": "Login successful",
+                      "user": {
+                        "id": 1,
+                        "email": "user@example.com",
+                        "role": "USER"
+                      },
+                      "refreshToken": "opaque-refresh-token"
                     }
                   }
                 }
@@ -168,7 +168,85 @@
             }
           }
         },
-        "summary": "Login dan dapatkan access token",
+        "summary": "Login dan set access token ke cookie HttpOnly",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "description": "Mengembalikan accessToken + refreshToken baru di body dan memperbarui cookie `auth_token`. Refresh token lama valid 10–30 detik (grace); replay setelah grace → revoke seluruh sesi.",
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rotasi berhasil, cookie auth_token diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "statusCode": 200,
+                    "message": "OK",
+                    "data": {
+                      "accessToken": "jwt.access.token",
+                      "refreshToken": "opaque-refresh-token-baru"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rotasi refresh token dengan grace period",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sesi revoke, cookie auth_token dihapus",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "statusCode": 200,
+                    "message": "OK",
+                    "data": {
+                      "message": "Logged out"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Logout: revoke refresh token sesi",
         "tags": [
           "Auth"
         ]
@@ -204,6 +282,9 @@
           }
         },
         "security": [
+          {
+            "cookie": []
+          },
           {
             "bearer": []
           }
@@ -2372,6 +2453,106 @@
         ]
       }
     },
+    "/policy": {
+      "get": {
+        "operationId": "PolicyController_getPolicy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak ada / tidak valid"
+          },
+          "403": {
+            "description": "Role tidak diizinkan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ambil kebijakan aktif (singleton)",
+        "tags": [
+          "Policy"
+        ]
+      },
+      "patch": {
+        "operationId": "PolicyController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak ada / tidak valid"
+          },
+          "403": {
+            "description": "Role tidak diizinkan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update kebijakan denda/pinjam",
+        "tags": [
+          "Policy"
+        ]
+      }
+    },
     "/dashboard/summary": {
       "get": {
         "operationId": "DashboardController_getSummary",
@@ -2408,6 +2589,9 @@
           }
         },
         "security": [
+          {
+            "cookie": []
+          },
           {
             "bearer": []
           }
@@ -2562,6 +2746,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateArticleDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -2718,18 +2912,76 @@
           "Articles"
         ]
       }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Aplikasi dan database sehat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "info": {
+                      "database": {
+                        "status": "up"
+                      }
+                    },
+                    "error": {},
+                    "details": {
+                      "database": {
+                        "status": "up"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Salah satu dependency tidak sehat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "error",
+                    "info": {},
+                    "error": {
+                      "database": {
+                        "status": "down"
+                      }
+                    },
+                    "details": {
+                      "database": {
+                        "status": "down"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Status kesehatan aplikasi dan koneksi PostgreSQL",
+        "tags": [
+          "Health"
+        ]
+      }
     }
   },
   "info": {
     "title": "Library Digital API",
-    "description": "REST API sistem manajemen perpustakaan (Perpustakaan v2).\n\n**Autentikasi**: sebagian besar endpoint butuh JWT Bearer token.\nDapatkan token via `POST /auth/login`, lalu klik tombol **Authorize**\ndan tempel token-nya.\n\n**Format response**: semua response dibungkus\n`{ statusCode, message, data }` oleh interceptor global.\nEndpoint paginated mengembalikan `data: { data: [...], meta: {...} }`.",
+    "description": "REST API sistem manajemen perpustakaan (Perpustakaan v2).\n\n**Autentikasi**: akses token dikirim via cookie `auth_token` (HttpOnly)\nyang diset oleh `POST /auth/login`. Endpoint proteksi membaca cookie\nterlebih dahulu, lalu fallback ke Bearer token.\n- `POST /auth/login` → set cookie `auth_token` + refreshToken di body\n- `POST /auth/refresh` → rotasi refresh token (grace period), cookie diperbarui\n- `POST /auth/logout` → revoke sesi refresh token & hapus cookie\n\n**Format response**: semua response dibungkus\n`{ statusCode, message, data }` oleh interceptor global.\nEndpoint paginated mengembalikan `data: { data: [...], meta: {...} }`.\n\n**Enum buku (English)**: kondisi `GOOD | SLIGHTLY_DAMAGED |\nHEAVILY_DAMAGED`; status transaksi `BORROWED | RETURNED | OVERDUE`.\n\n**Soft delete**: DELETE pada users/books/items melakukan soft delete\n(`deleted_at`), data tetap ada tapi tidak tampil pada list/read.\nHistori transaksi tetap menampilkan user/buku yang sudah dihapus.\nEmail & nomor identifikasi user yang dihapus boleh dipakai registrasi ulang.\n\n**Health**: `GET /api/v1/health` (publik) — status app + koneksi database.",
     "version": "1.0",
     "contact": {}
   },
   "tags": [
     {
       "name": "Auth",
-      "description": "Registrasi, login, profil"
+      "description": "Registrasi, login (cookie), refresh rotation, logout"
     },
     {
       "name": "Users",
@@ -2761,7 +3013,7 @@
     },
     {
       "name": "Dashboard",
-      "description": "Ringkasan statistik"
+      "description": "Ringkasan statistik (cache 60 detik)"
     },
     {
       "name": "Activity Logs",
@@ -2770,6 +3022,14 @@
     {
       "name": "Articles",
       "description": "Artikel/berita"
+    },
+    {
+      "name": "Policy",
+      "description": "Kebijakan pinjam & denda"
+    },
+    {
+      "name": "Health",
+      "description": "Status aplikasi & database"
     }
   ],
   "servers": [],
@@ -2779,7 +3039,13 @@
         "scheme": "bearer",
         "bearerFormat": "JWT",
         "type": "http",
-        "description": "Tempel access_token hasil login"
+        "description": "Alternatif untuk cookie: tempel access_token hasil login."
+      },
+      "auth_token": {
+        "type": "http",
+        "in": "cookie",
+        "name": "auth_token",
+        "description": "HttpOnly cookie access token, diset otomatis oleh POST /auth/login."
       }
     },
     "schemas": {
@@ -2797,7 +3063,7 @@
           },
           "password": {
             "type": "string",
-            "example": "password123",
+            "example": "Str0ng!P4ss#2024",
             "minLength": 8
           },
           "full_name": {
@@ -2832,13 +3098,26 @@
           },
           "password": {
             "type": "string",
-            "example": "password123",
+            "example": "Str0ng!P4ss#2024",
             "minLength": 8
           }
         },
         "required": [
           "email",
           "password"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "example": "opaque-refresh-token-string",
+            "description": "Refresh token yang dikembalikan saat login"
+          }
+        },
+        "required": [
+          "refreshToken"
         ]
       },
       "UpdateUserDto": {
@@ -3127,11 +3406,11 @@
           "condition": {
             "type": "string",
             "enum": [
-              "BAIK",
-              "RUSAK_RINGAN",
-              "RUSAK_BERAT"
+              "GOOD",
+              "SLIGHTLY_DAMAGED",
+              "HEAVILY_DAMAGED"
             ],
-            "example": "BAIK"
+            "example": "GOOD"
           }
         },
         "required": [
@@ -3146,17 +3425,28 @@
             "type": "string",
             "example": "B001",
             "description": "Barcode fisik buku"
-          },
-          "user_id": {
-            "type": "number",
-            "example": 1,
-            "description": "ID User yang meminjam"
           }
         },
         "required": [
-          "barcode",
-          "user_id"
+          "barcode"
         ]
+      },
+      "UpdatePolicyDto": {
+        "type": "object",
+        "properties": {
+          "fine_per_day": {
+            "type": "number",
+            "example": 5000
+          },
+          "loan_duration_days": {
+            "type": "number",
+            "example": 7
+          },
+          "max_books_per_user": {
+            "type": "number",
+            "example": 3
+          }
+        }
       },
       "CreateArticleDto": {
         "type": "object",
@@ -3182,6 +3472,27 @@
           "title",
           "content"
         ]
+      },
+      "UpdateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Koleksi Buku Baru Maret 2026"
+          },
+          "content": {
+            "type": "string",
+            "example": "Berikut adalah daftar buku teknologi terbaru..."
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://image.com/cover.jpg"
+          },
+          "is_published": {
+            "type": "boolean",
+            "default": true
+          }
+        }
       }
     }
   }

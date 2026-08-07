@@ -399,3 +399,27 @@ dist
 coverage/
 .webpack
 .serverless/**/*.zip
+
+# AI tooling config & artifacts
+CLAUDE.md
+AGENTS.md
+.opencode/
+opencode.json
+opencode.jsonc
+.claude/
+.claude.json
+.cursor/
+.cursorrules
+.windsurfrules
+.codex/
+.copilot/
+.github/copilot-instructions.md
+.gemini/
+.ai/
+AI_AGENTS.md
+*.ai.session
+*.ai.log
+
+# AI work docs (local planning, not repo artifacts)
+BACKLOG_REFACTORING.md
+PRD_Refactory_BE.md

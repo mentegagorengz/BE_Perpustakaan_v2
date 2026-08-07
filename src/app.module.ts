@@ -18,6 +18,7 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ArticlesModule } from './modules/articles/articles.module';
 import { PolicyModule } from './modules/policy/policy.module';
+import { HealthModule } from './modules/health/health.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ActivityLogInterceptor } from './common/interceptors/activity-logs.interceptor';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -52,6 +53,7 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
     DashboardModule,
     ArticlesModule,
     PolicyModule,
+    HealthModule,
   ],
   providers: [
     // Global guard / interceptor / filter terdaftar via DI container (APP_*),
