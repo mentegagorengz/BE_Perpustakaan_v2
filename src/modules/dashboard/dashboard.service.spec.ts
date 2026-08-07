@@ -1,27 +1,46 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { DashboardService } from './dashboard.service';
-import { Book } from '../books/entities/book.entity';
-import { ActivityLog } from '../activity-logs/entities/activity-log.entity';
-import { User } from '../users/entities/user.entity';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import {
+  DashboardService,
+  DASHBOARD_SUMMARY_CACHE_KEY,
+  DASHBOARD_CACHE_TTL_MS,
+} from './dashboard.service';
+import { DashboardReadQuery } from './dashboard.read-query';
 
 describe('DashboardService', () => {
   let service: DashboardService;
-  let bookRepo: { count: jest.Mock };
-  let logRepo: { count: jest.Mock };
-  let userRepo: { count: jest.Mock };
+  let readQuery: {
+    countActiveBooks: jest.Mock;
+    countActiveUsers: jest.Mock;
+    countLogs: jest.Mock;
+    countLoginAttempts: jest.Mock;
+    countFailedActions: jest.Mock;
+    getTransactionStats: jest.Mock;
+  };
+  let cacheManager: {
+    get: jest.Mock;
+    set: jest.Mock;
+    del: jest.Mock;
+  };
 
   beforeEach(async () => {
-    bookRepo = { count: jest.fn() };
-    logRepo = { count: jest.fn() };
-    userRepo = { count: jest.fn() };
+    readQuery = {
+      countActiveBooks: jest.fn(),
+      countActiveUsers: jest.fn(),
+      countLogs: jest.fn(),
+      countLoginAttempts: jest.fn(),
+      countFailedActions: jest.fn(),
+      getTransactionStats: jest.fn(),
+    };
+    cacheManager = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
+    cacheManager.set.mockResolvedValue(undefined);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DashboardService,
-        { provide: getRepositoryToken(Book), useValue: bookRepo },
-        { provide: getRepositoryToken(ActivityLog), useValue: logRepo },
-        { provide: getRepositoryToken(User), useValue: userRepo },
+        { provide: DashboardReadQuery, useValue: readQuery },
+        { provide: CACHE_MANAGER, useValue: cacheManager },
       ],
     }).compile();
 
@@ -30,22 +49,36 @@ describe('DashboardService', () => {
 
   afterEach(() => jest.clearAllMocks());
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  const seedQueries = () => {
+    readQuery.countActiveBooks.mockResolvedValue(12);
+    readQuery.countActiveUsers.mockResolvedValue(8);
+    readQuery.countLogs.mockResolvedValue(100);
+    readQuery.countLoginAttempts.mockResolvedValue(30);
+    readQuery.countFailedActions.mockResolvedValue(5);
+    readQuery.getTransactionStats.mockResolvedValue({
+      total_transactions: 40,
+      active_borrows: 6,
+      overdue_borrows: 2,
+      returned_transactions: 32,
+    });
+  };
 
   describe('getSummary', () => {
-    beforeEach(() => {
-      bookRepo.count.mockResolvedValue(12);
-      userRepo.count.mockResolvedValue(8);
-      // logRepo.count is called three times: total logs, login attempts, failed actions
-      logRepo.count
-        .mockResolvedValueOnce(100) // total logs
-        .mockResolvedValueOnce(30) // login attempts (where action = LOGIN)
-        .mockResolvedValueOnce(5); // failed actions (where status = FAILED)
+    it('returns the cached summary without re-running queries', async () => {
+      const cached = { total_books: 1 } as never;
+      cacheManager.get.mockResolvedValue(cached);
+
+      const result = await service.getSummary();
+
+      expect(result).toBe(cached);
+      expect(readQuery.countActiveBooks).not.toHaveBeenCalled();
+      expect(cacheManager.set).not.toHaveBeenCalled();
     });
 
-    it('aggregates the counts from every repository into the summary payload', async () => {
+    it('computes, caches with TTL 60s and returns the summary on cache miss', async () => {
+      cacheManager.get.mockResolvedValue(undefined);
+      seedQueries();
+
       const result = await service.getSummary();
 
       expect(result).toMatchObject({
@@ -54,32 +87,35 @@ describe('DashboardService', () => {
         total_logs: 100,
         login_attempts: 30,
         failed_actions: 5,
+        transactions: {
+          total_transactions: 40,
+          active_borrows: 6,
+          overdue_borrows: 2,
+          returned_transactions: 32,
+        },
         server_status: 'ONLINE',
       });
+      expect(cacheManager.set).toHaveBeenCalledWith(
+        DASHBOARD_SUMMARY_CACHE_KEY,
+        result,
+        DASHBOARD_CACHE_TTL_MS,
+      );
     });
 
-    it('queries each repository with the expected filters', async () => {
-      await service.getSummary();
+    it('still returns the summary when the cache write fails', async () => {
+      cacheManager.get.mockResolvedValue(undefined);
+      cacheManager.set.mockRejectedValue(new Error('store down'));
+      seedQueries();
 
-      expect(bookRepo.count).toHaveBeenCalledTimes(1);
-      expect(userRepo.count).toHaveBeenCalledTimes(1);
-      expect(logRepo.count).toHaveBeenCalledTimes(3);
-      expect(logRepo.count).toHaveBeenNthCalledWith(1);
-      expect(logRepo.count).toHaveBeenCalledWith({
-        where: { action: 'LOGIN' },
-      });
-      expect(logRepo.count).toHaveBeenCalledWith({
-        where: { status: 'FAILED' },
-      });
-    });
-
-    it('reports the server status as ONLINE', async () => {
       const result = await service.getSummary();
 
-      expect(result.server_status).toBe('ONLINE');
+      expect(result.total_books).toBe(12);
     });
 
     it('includes a last_updated ISO timestamp string', async () => {
+      cacheManager.get.mockResolvedValue(undefined);
+      seedQueries();
+
       const result = await service.getSummary();
 
       expect(typeof result.last_updated).toBe('string');

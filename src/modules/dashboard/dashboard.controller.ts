@@ -1,5 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiCookieAuth,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -13,6 +18,7 @@ import {
 @ApiTags('Dashboard')
 @ApiResponseWrapped()
 @ApiBearerAuth()
+@ApiCookieAuth()
 @ApiAuthErrors()
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)

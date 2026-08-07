@@ -1,33 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Book } from '../books/entities/book.entity';
-import { ActivityLog } from '../activity-logs/entities/activity-log.entity';
-import { User } from '../users/entities/user.entity';
-// Import entity transaksi peminjaman kamu di sini (misal: Borrowing)
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { Cache } from 'cache-manager';
+import { DashboardReadQuery } from './dashboard.read-query';
+import type { DashboardSummary } from './dashboard.read-query';
+
+export const DASHBOARD_SUMMARY_CACHE_KEY = 'dashboard:summary';
+export const DASHBOARD_CACHE_TTL_MS = 60_000;
 
 @Injectable()
 export class DashboardService {
+  private readonly logger = new Logger(DashboardService.name);
+
   constructor(
-    @InjectRepository(Book) private bookRepo: Repository<Book>,
-    @InjectRepository(ActivityLog) private logRepo: Repository<ActivityLog>,
-    @InjectRepository(User) private userRepo: Repository<User>,
-    // @InjectRepository(Borrowing) private borrowRepo: Repository<Borrowing>,
+    private readonly readQuery: DashboardReadQuery,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
-  async getSummary() {
-    const [totalBooks, totalUsers, totalLogs, loginAttempts] =
-      await Promise.all([
-        this.bookRepo.count(),
-        this.userRepo.count(),
-        this.logRepo.count(),
-        this.logRepo.count({ where: { action: 'LOGIN' } }),
-      ]);
+  async getSummary(): Promise<DashboardSummary> {
+    const cached = await this.cacheManager.get<DashboardSummary>(
+      DASHBOARD_SUMMARY_CACHE_KEY,
+    );
+    if (cached) return cached;
 
-    // Kita hitung juga aksi yang gagal untuk stat "Failed Actions" di UI kamu
-    const failedActions = await this.logRepo.count({
-      where: { status: 'FAILED' },
-    });
+    const summary = await this.computeSummary();
+    await this.cacheManager
+      .set(DASHBOARD_SUMMARY_CACHE_KEY, summary, DASHBOARD_CACHE_TTL_MS)
+      .catch((err: unknown) => {
+        this.logger.warn(
+          `dashboard cache write failed: ${
+            err instanceof Error ? err.message : JSON.stringify(err)
+          }`,
+        );
+      });
+
+    return summary;
+  }
+
+  private async computeSummary(): Promise<DashboardSummary> {
+    const [
+      totalBooks,
+      totalUsers,
+      totalLogs,
+      loginAttempts,
+      failedActions,
+      transactions,
+    ] = await Promise.all([
+      this.readQuery.countActiveBooks(),
+      this.readQuery.countActiveUsers(),
+      this.readQuery.countLogs(),
+      this.readQuery.countLoginAttempts(),
+      this.readQuery.countFailedActions(),
+      this.readQuery.getTransactionStats(),
+    ]);
 
     return {
       total_books: totalBooks,
@@ -35,6 +59,7 @@ export class DashboardService {
       total_logs: totalLogs,
       login_attempts: loginAttempts,
       failed_actions: failedActions,
+      transactions,
       server_status: 'ONLINE',
       last_updated: new Date().toISOString(),
     };
