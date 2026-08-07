@@ -1,20 +1,18 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { ResponseInterceptor } from '../src/common/interceptors/response.interceptor';
-import { AllExceptionsFilter } from '../src/common/filters/http-exception.filter';
+import cookieParser from 'cookie-parser';
 
 /**
  * Menerapkan konfigurasi request-pipeline yang sama seperti `main.ts`
- * (prefix, ValidationPipe, ResponseInterceptor, exception filter) supaya
- * e2e test berjalan terhadap perilaku HTTP yang identik dengan produksi.
+ * (prefix, ValidationPipe) supaya e2e test berjalan terhadap perilaku HTTP
+ * yang identik dengan produksi.
  *
- * Catatan: ActivityLogInterceptor sengaja TIDAK dipasang di sini. Interceptor
- * itu menulis ke tabel activity_logs pada tiap request dan bukan bagian dari
- * perilaku fungsional yang diuji, jadi diomit agar test fokus & bersih.
+ * ResponseInterceptor, ActivityLogInterceptor, dan AllExceptionsFilter
+ * sudah terdaftar sebagai global APP_* di AppModule, sehingga tidak perlu
+ * dipasang manual di sini (menghindari double-wrapping response).
  */
 export function configureApp(app: INestApplication): INestApplication {
   app.setGlobalPrefix('api/v1');
-  app.useGlobalInterceptors(new ResponseInterceptor());
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

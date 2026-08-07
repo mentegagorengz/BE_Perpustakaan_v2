@@ -7,9 +7,9 @@ export enum BookStatus {
 }
 
 export enum BookCondition {
-  BAIK = 'BAIK',
-  RUSAK_RINGAN = 'RUSAK_RINGAN',
-  RUSAK_BERAT = 'RUSAK_BERAT',
+  GOOD = 'GOOD',
+  SLIGHTLY_DAMAGED = 'SLIGHTLY_DAMAGED',
+  HEAVILY_DAMAGED = 'HEAVILY_DAMAGED',
 }
 
 export enum TransactionStatus {

@@ -169,6 +169,7 @@ export class TransactionsService {
       .leftJoinAndSelect('transaction.user', 'user')
       .leftJoinAndSelect('transaction.bookItem', 'bookItem')
       .leftJoinAndSelect('bookItem.book', 'book')
+      .setFindOptions({ withDeleted: true }) // Histori tetap tampil walau user/buku soft-deleted
       .orderBy('transaction.borrowed_at', 'DESC')
       .skip(skip)
       .take(limit);
@@ -203,6 +204,7 @@ export class TransactionsService {
     const [data, total] = await this.transactionRepository.findAndCount({
       where: { user: { id: userId } },
       relations: ['bookItem', 'bookItem.book'],
+      withDeleted: true, // Riwayat user tetap bisa dibaca walau user/buku di-soft-delete
       order: { borrowed_at: 'DESC' },
       skip,
       take: limit,

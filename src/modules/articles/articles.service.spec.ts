@@ -62,11 +62,11 @@ describe('ArticlesService', () => {
       expect(result).toBe(saved);
     });
 
-    it('falls back to user.sub when user.id is absent', async () => {
+    it('mengambil id penulis dari user.id dan mem-persist', async () => {
       repo.create.mockReturnValue({});
       repo.save.mockResolvedValue({});
 
-      await service.create(dto, { sub: 42 });
+      await service.create(dto, { id: 42 });
 
       expect(repo.create).toHaveBeenCalledWith({
         ...dto,

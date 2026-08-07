@@ -48,7 +48,11 @@ describe('JwtStrategy', () => {
   it('returns the sanitized identity for a valid payload', async () => {
     usersService.findById.mockResolvedValue(buildUser());
 
-    const result = await strategy.validate({ sub: 1 });
+    const result = await strategy.validate({
+      sub: 1,
+      email: 'user@example.com',
+      role: SystemRole.USER,
+    });
 
     expect(usersService.findById).toHaveBeenCalledWith(1);
     expect(result).toEqual({
@@ -61,7 +65,11 @@ describe('JwtStrategy', () => {
   it('does not leak the password hash into the request identity', async () => {
     usersService.findById.mockResolvedValue(buildUser());
 
-    const result = await strategy.validate({ sub: 1 });
+    const result = await strategy.validate({
+      sub: 1,
+      email: 'user@example.com',
+      role: SystemRole.USER,
+    });
 
     expect(result).not.toHaveProperty('password');
   });
@@ -74,8 +82,12 @@ describe('JwtStrategy', () => {
       new NotFoundException('User with ID 1 not found'),
     );
 
-    await expect(strategy.validate({ sub: 1 })).rejects.toThrow(
-      UnauthorizedException,
-    );
+    await expect(
+      strategy.validate({
+        sub: 1,
+        email: 'user@example.com',
+        role: SystemRole.USER,
+      }),
+    ).rejects.toThrow(UnauthorizedException);
   });
 });

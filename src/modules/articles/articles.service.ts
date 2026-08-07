@@ -5,6 +5,11 @@ import { Article } from './entities/article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
+/** Identitas user terautentikasi (hasil JwtStrategy). */
+export interface ArticleAuthorRef {
+  id: number;
+}
+
 @Injectable()
 export class ArticlesService {
   constructor(
@@ -12,18 +17,21 @@ export class ArticlesService {
     private readonly articleRepo: Repository<Article>,
   ) {}
 
-  async create(createArticleDto: CreateArticleDto, user: any) {
+  async create(createArticleDto: CreateArticleDto, user: ArticleAuthorRef) {
     const article = this.articleRepo.create({
-      ...createArticleDto, // Gunakan huruf kecil sesuai parameter!
-      author: { id: user.id || user.sub }, // Pastikan mengambil ID dari token
+      ...createArticleDto,
+      author: { id: user.id },
     });
     return await this.articleRepo.save(article);
   }
 
-  async createMany(createArticlesDto: CreateArticleDto[], user: any) {
+  async createMany(
+    createArticlesDto: CreateArticleDto[],
+    user: ArticleAuthorRef,
+  ) {
     const articlesData = createArticlesDto.map((dto) => ({
       ...dto,
-      author: { id: user.id || user.sub }, // Pastikan mengambil ID dari token
+      author: { id: user.id },
     }));
     const articles = this.articleRepo.create(articlesData);
     return await this.articleRepo.save(articles);

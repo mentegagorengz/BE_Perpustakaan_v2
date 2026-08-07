@@ -4,58 +4,61 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Request } from 'express';
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { ActivityLogsService } from '../../modules/activity-logs/activity-logs.service';
+import {
+  AUDIT_LOG_EVENT,
+  AuditLogEvent,
+  AuditStatus,
+  determineAuditAction,
+} from '../../modules/activity-logs/audit-log.event';
 
+/**
+ * Interceptor audit log event-driven.
+ *
+ * Interceptor hanya mengklasifikasikan aksi dan menge-mit event `audit.log`.
+ * Penyimpanan ke database dilakukan secara asinkron oleh ActivityLogListener
+ * sehingga request HTTP tidak menunggu penulisan log dan kegagalan persisten
+ * tidak memengaruhi response utama.
+ */
 @Injectable()
 export class ActivityLogInterceptor implements NestInterceptor {
-  constructor(private readonly activityLogsService: ActivityLogsService) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const request = context.switchToHttp().getRequest();
-    const { method, url } = request;
-    const ip = request.ip || request.connection?.remoteAddress;
-    const device = request.headers['user-agent'];
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const request = context.switchToHttp().getRequest<Request>();
 
     return next.handle().pipe(
-      tap(() => this.logAction(request, 'SUCCESS', url, method, device, ip)),
-      catchError((err) => {
-        this.logAction(request, 'FAILED', url, method, device, ip);
+      tap(() => this.emitAudit(request, 'SUCCESS')),
+      catchError((err: unknown) => {
+        this.emitAudit(request, 'FAILED');
         return throwError(() => err);
       }),
     );
   }
 
-  private async logAction(
-    request: any,
-    status: 'SUCCESS' | 'FAILED',
-    url: string,
-    method: string,
-    device: string,
-    ip: string,
-  ) {
-    const user = request.user;
-    const action = url.includes('auth/login')
-      ? 'LOGIN'
-      : method === 'POST'
-        ? 'CREATE'
-        : ['PATCH', 'PUT'].includes(method)
-          ? 'UPDATE'
-          : method === 'DELETE'
-            ? 'DELETE'
-            : 'ACCESS_PAGE';
+  private emitAudit(request: Request, status: AuditStatus): void {
+    const { method, url } = request;
+    const action = determineAuditAction(method, url);
 
-    if (['CREATE', 'UPDATE', 'DELETE', 'LOGIN'].includes(action)) {
-      await this.activityLogsService.create({
-        action,
-        module: url.split('/')[3]?.toUpperCase() || 'SYSTEM',
-        details: `${user?.full_name || 'Guest'} performed ${action} on ${url}`,
-        status,
-        ip_address: Array.isArray(ip) ? ip[0] : ip,
-        device_info: device,
-        user: user || null,
-      });
-    }
+    if (action === 'ACCESS_PAGE') return;
+
+    const user = request.user as
+      | { id?: number; full_name?: string }
+      | undefined;
+    const event: AuditLogEvent = {
+      action,
+      status,
+      module: url.split('/')[3]?.toUpperCase() || 'SYSTEM',
+      details: `${user?.full_name ?? 'Guest'} performed ${action} on ${url}`,
+      ipAddress: request.ip,
+      deviceInfo: request.headers['user-agent'],
+      userId: user?.id,
+    };
+
+    // Non-blocking: listener async menangani persistensi secara terisolasi.
+    this.eventEmitter.emit(AUDIT_LOG_EVENT, event);
   }
 }

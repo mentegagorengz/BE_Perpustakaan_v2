@@ -32,6 +32,7 @@ describe('UsersService', () => {
       save: jest.fn(),
       findAndCount: jest.fn(),
       remove: jest.fn(),
+      softDelete: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -228,17 +229,25 @@ describe('UsersService', () => {
       repository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(99)).rejects.toThrow(NotFoundException);
-      expect(repository.remove).not.toHaveBeenCalled();
+      expect(repository.softDelete).not.toHaveBeenCalled();
     });
 
-    it('removes the user when it exists', async () => {
+    it('soft-deletes the user when it exists (soft delete)', async () => {
       const user = buildUser();
       repository.findOne.mockResolvedValue(user);
-      repository.remove.mockResolvedValue(user);
+      repository.softDelete.mockResolvedValue({ affected: 1 } as never);
 
       await service.remove(1);
 
-      expect(repository.remove).toHaveBeenCalledWith(user);
+      expect(repository.softDelete).toHaveBeenCalledWith(1);
+    });
+
+    it('user soft-deleted tetap bisa didaftarkan ulang dengan email yang sama', async () => {
+      repository.findOne.mockResolvedValue(null);
+
+      const result = await service.findByEmail('user@example.com');
+
+      expect(result).toBeNull();
     });
   });
 });

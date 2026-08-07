@@ -130,7 +130,22 @@ describe('BooksController', () => {
 
   describe('createMany', () => {
     it('mendelegasikan ke service.createMany dengan array buku', async () => {
-      const dtos = [{ title: 'A', category_id: 1, publisher_id: 1, language_id: 1, author_ids: [1] } as CreateBookDto, { title: 'B', category_id: 1, publisher_id: 1, language_id: 1, author_ids: [1] } as CreateBookDto];
+      const dtos = [
+        {
+          title: 'A',
+          category_id: 1,
+          publisher_id: 1,
+          language_id: 1,
+          author_ids: [1],
+        } as CreateBookDto,
+        {
+          title: 'B',
+          category_id: 1,
+          publisher_id: 1,
+          language_id: 1,
+          author_ids: [1],
+        } as CreateBookDto,
+      ];
       const expected = [{ id: 1 }, { id: 2 }];
       service.createMany.mockResolvedValue(expected);
 

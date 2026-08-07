@@ -56,7 +56,9 @@ describe('ArticlesController', () => {
 
   it('create forwards the dto and the authenticated user', async () => {
     const dto: CreateArticleDto = { title: 'T', content: 'C' };
-    const req = { user: { id: 9 } };
+    const req = {
+      user: { id: 9 },
+    } as unknown as Parameters<ArticlesController['create']>[1];
     const created = { id: 1, ...dto };
     service.create.mockResolvedValue(created);
 
@@ -82,7 +84,9 @@ describe('ArticlesController', () => {
 
   it('createMany forwards the dto array and the authenticated user', async () => {
     const dtos: CreateArticleDto[] = [{ title: 'A', content: 'a' }];
-    const req = { user: { id: 2 } };
+    const req = {
+      user: { id: 2 },
+    } as unknown as Parameters<ArticlesController['createMany']>[1];
     service.createMany.mockResolvedValue(dtos);
 
     await expect(controller.createMany(dtos, req)).resolves.toBe(dtos);

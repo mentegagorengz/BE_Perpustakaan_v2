@@ -44,19 +44,32 @@ describe('AuthController', () => {
     expect(service.register).toHaveBeenCalledWith(dto);
   });
 
-  it('login should delegate to service.login with the dto', async () => {
+  it('login should set the access token cookie and return the token payload', async () => {
     const dto = { email: 'user@example.com', password: 'secret123' } as never;
-    const token = { access_token: 'jwt', user: { id: 1 } };
-    service.login.mockResolvedValue(token);
+    const tokenPayload = {
+      accessToken: 'jwt',
+      refreshToken: 'refresh',
+      user: { id: 1 },
+    };
+    service.login.mockResolvedValue(tokenPayload);
+    const response = {
+      cookie: jest.fn(),
+      clearCookie: jest.fn(),
+    } as never;
 
-    await expect(controller.login(dto)).resolves.toBe(token);
+    await expect(controller.login(dto, response)).resolves.toEqual({
+      message: 'Login successful',
+      user: { id: 1 },
+      refreshToken: 'refresh',
+    });
     expect(service.login).toHaveBeenCalledWith(dto);
+    expect((response as { cookie: jest.Mock }).cookie).toHaveBeenCalled();
   });
 
   it('getProfile returns the authenticated user as attached to the request', async () => {
     const user = { id: 1, email: 'user@example.com', role: 'USER' };
 
-    await expect(controller.getProfile(user)).resolves.toBe(user);
+    expect(controller.getProfile(user)).toEqual(user);
   });
 
   describe('route protection (security)', () => {
