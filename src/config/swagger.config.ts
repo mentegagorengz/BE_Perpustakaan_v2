@@ -13,16 +13,24 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       [
         'REST API sistem manajemen perpustakaan (Perpustakaan v2).',
         '',
-        '**Autentikasi**: akses token dikirim via cookie `auth_token` (HttpOnly)',
+        '**Autentikasi**: akses token dikirim via cookie `access_token` (HttpOnly)',
         'yang diset oleh `POST /auth/login`. Endpoint proteksi membaca cookie',
         'terlebih dahulu, lalu fallback ke Bearer token.',
-        '- `POST /auth/login` → set cookie `auth_token` + refreshToken di body',
+        '- `POST /auth/login` → set cookie `access_token` + `refresh_token` (HttpOnly), refreshToken juga di body',
         '- `POST /auth/refresh` → rotasi refresh token (grace period), cookie diperbarui',
         '- `POST /auth/logout` → revoke sesi refresh token & hapus cookie',
         '',
-        '**Format response**: semua response dibungkus',
-        '`{ statusCode, message, data }` oleh interceptor global.',
-        'Endpoint paginated mengembalikan `data: { data: [...], meta: {...} }`.',
+        '**Format response sukses**: `{ success: true, message, data, meta? }`.',
+        '`meta` hanya ada pada endpoint paginated dan berada di top-level',
+        '(bukan di dalam `data`), snake_case: `page | limit | total_items |',
+        'total_pages | has_next_page | has_prev_page`. `data` bernilai `null`',
+        'bila tidak ada payload.',
+        '**Format response error**:',
+        '`{ success: false, message, error: { code, details } }`',
+        'dengan `details` berisi `{ field, message }[]` (validasi) atau `null`.',
+        'Kode kesalahan: `BAD_REQUEST | UNAUTHORIZED | FORBIDDEN | NOT_FOUND |',
+        'CONFLICT | UNPROCESSABLE_ENTITY | TOO_MANY_REQUESTS |',
+        'INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE`.',
         '',
         '**Enum buku (English)**: kondisi `GOOD | SLIGHTLY_DAMAGED |',
         'HEAVILY_DAMAGED`; status transaksi `BORROWED | RETURNED | OVERDUE`.',
@@ -43,15 +51,15 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       description: 'Alternatif untuk cookie: tempel access_token hasil login.',
     })
     .addCookieAuth(
-      'auth_token',
+      'access_token',
       {
         type: 'http',
         in: 'cookie',
-        name: 'auth_token',
+        name: 'access_token',
         description:
           'HttpOnly cookie access token, diset otomatis oleh POST /auth/login.',
       },
-      'auth_token',
+      'access_token',
     )
     .addTag('Auth', 'Registrasi, login (cookie), refresh rotation, logout')
     .addTag('Users', 'Manajemen user (admin)')

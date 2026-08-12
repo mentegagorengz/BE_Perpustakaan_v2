@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   Req,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -23,11 +25,11 @@ import {
   ApiNotFound,
   ApiResponseWrapped,
 } from '../../common/decorators/api-docs.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 type AuthenticatedRequest = Request & { user: { id: number } };
 
 @ApiTags('Articles')
-@ApiResponseWrapped()
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
@@ -35,22 +37,28 @@ export class ArticlesController {
   @Get()
   @ApiOperation({ summary: 'Melihat semua berita (Publik)' })
   @ApiResponseWrapped()
+  @ResponseMessage('Berhasil mengambil daftar berita')
   findAll() {
     return this.articlesService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Detail berita' })
+  @ApiResponseWrapped()
   @ApiNotFound('Berita')
+  @ResponseMessage('Detail berita berhasil diambil')
   findOne(@Param('id') id: string) {
     return this.articlesService.findOne(+id);
   }
 
   @Post()
+  @ApiResponseWrapped(undefined, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Membuat berita baru (Admin/Staff Only)' })
+  @ResponseMessage('Berita berhasil ditambahkan')
   create(
     @Body() createArticleDto: CreateArticleDto,
     @Req() req: AuthenticatedRequest,
@@ -59,34 +67,41 @@ export class ArticlesController {
   }
 
   @Patch(':id')
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiOperation({ summary: 'Update berita' })
   @ApiAuthErrors()
   @ApiNotFound('Berita')
+  @ResponseMessage('Berita berhasil diubah')
   update(@Param('id') id: string, @Body() updateData: UpdateArticleDto) {
     return this.articlesService.update(+id, updateData);
   }
 
   @Delete(':id')
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Menghapus berita' })
   @ApiAuthErrors()
   @ApiNotFound('Berita')
+  @ResponseMessage('Berita berhasil dihapus')
   remove(@Param('id') id: string) {
     return this.articlesService.remove(+id);
   }
 
   @Post('bulk')
+  @ApiResponseWrapped(undefined, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Membuat banyak berita sekaligus (Admin/Staff Only)',
   })
+  @ResponseMessage('Berita berhasil ditambahkan secara massal')
   createMany(
     @Body() createArticlesDto: CreateArticleDto[],
     @Req() req: AuthenticatedRequest,

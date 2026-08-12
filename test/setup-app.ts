@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { validationExceptionFactory } from '../src/common/utils/validation-errors';
 
 /**
  * Menerapkan konfigurasi request-pipeline yang sama seperti `main.ts`
@@ -21,6 +22,7 @@ export function configureApp(app: INestApplication): INestApplication {
       transformOptions: {
         enableImplicitConversion: true,
       },
+      exceptionFactory: validationExceptionFactory,
     }),
   );
   return app;

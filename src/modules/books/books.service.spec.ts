@@ -236,7 +236,14 @@ describe('BooksService', () => {
       expect(queryBuilder.take).toHaveBeenCalledWith(10);
       expect(result).toEqual({
         data,
-        meta: { total: 25, page: 2, limit: 10, totalPages: 3 },
+        meta: {
+          page: 2,
+          limit: 10,
+          total_items: 25,
+          total_pages: 3,
+          has_next_page: true,
+          has_prev_page: true,
+        },
       });
     });
 
@@ -248,10 +255,12 @@ describe('BooksService', () => {
       expect(queryBuilder.skip).toHaveBeenCalledWith(0);
       expect(queryBuilder.take).toHaveBeenCalledWith(10);
       expect(result.meta).toEqual({
-        total: 0,
         page: 1,
         limit: 10,
-        totalPages: 0,
+        total_items: 0,
+        total_pages: 0,
+        has_next_page: false,
+        has_prev_page: false,
       });
     });
 

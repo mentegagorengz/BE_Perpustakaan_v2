@@ -8,7 +8,10 @@ import { DataSource, IsNull, Repository } from 'typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { BookItem } from '../books/entities/book-item.entity';
 import { PaginationDto } from '../../common/dto/pagination.dto';
-import { PaginatedResult } from '../../common/interfaces/paginated-result.interface';
+import {
+  createPaginationMeta,
+  PaginatedResult,
+} from '../../common/interfaces/paginated-result.interface';
 import { BookStatus, TransactionStatus } from '../../common/enums/book.enum';
 import { PolicyService } from '../policy/policy.service';
 
@@ -64,7 +67,7 @@ export class TransactionsService {
       await queryRunner.manager.save(bookItem);
 
       await queryRunner.commitTransaction();
-      return { message: 'Buku berhasil dipinjam', dueDate };
+      return { due_date: dueDate };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -145,10 +148,8 @@ export class TransactionsService {
       await queryRunner.commitTransaction();
 
       return {
-        message: 'Buku berhasil dikembalikan',
-        fine:
-          fineAmount > 0 ? `Denda Anda: Rp ${fineAmount}` : 'Tidak ada denda',
-        returnedAt: returnDate,
+        fine_amount: fineAmount,
+        returned_at: returnDate,
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -185,12 +186,7 @@ export class TransactionsService {
 
     return {
       data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: createPaginationMeta(page, limit, total),
     };
   }
 
@@ -212,12 +208,7 @@ export class TransactionsService {
 
     return {
       data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: createPaginationMeta(page, limit, total),
     };
   }
 }

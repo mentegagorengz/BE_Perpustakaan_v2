@@ -25,4 +25,12 @@ export class PaginationDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({
+    example: 'CREATE',
+    description: 'Filter berdasarkan jenis aksi audit log',
+  })
+  @IsOptional()
+  @IsString()
+  action?: string;
 }

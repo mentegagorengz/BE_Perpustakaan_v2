@@ -15,7 +15,10 @@ import { Category } from '../categories/entities/category.entity';
 import { Publisher } from '../publishers/entities/publisher.entity';
 import { Language } from '../languages/entities/language.entity';
 import { PaginationDto } from '../../common/dto/pagination.dto';
-import { PaginatedResult } from '../../common/interfaces/paginated-result.interface';
+import {
+  createPaginationMeta,
+  PaginatedResult,
+} from '../../common/interfaces/paginated-result.interface';
 
 @Injectable()
 export class BooksService {
@@ -131,12 +134,7 @@ export class BooksService {
 
     return {
       data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: createPaginationMeta(page, limit, total),
     };
   }
 

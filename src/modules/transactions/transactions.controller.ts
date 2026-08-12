@@ -7,6 +7,8 @@ import {
   Param,
   Get,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { TransactionsService } from './transactions.service';
@@ -15,6 +17,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
@@ -23,7 +26,6 @@ import {
 } from '../../common/decorators/api-docs.decorator';
 
 @ApiTags('Transactions')
-@ApiResponseWrapped()
 @ApiBearerAuth()
 @ApiAuthErrors()
 @Controller('transactions')
@@ -32,6 +34,9 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @ApiOperation({ summary: 'Pinjam buku' })
+  @ApiResponseWrapped(undefined, undefined, 201)
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Buku berhasil dipinjam')
   @Post('borrow')
   async borrow(@Body() dto: BorrowBookDto, @GetUser('id') userId: number) {
     return this.transactionsService.borrowBook(dto.barcode, userId);
@@ -39,6 +44,7 @@ export class TransactionsController {
 
   @ApiOperation({ summary: 'Kembalikan buku berdasarkan barcode' })
   @ApiResponseWrapped()
+  @ResponseMessage('Buku berhasil dikembalikan')
   @UseGuards(RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Patch('return/:barcode')
@@ -50,6 +56,7 @@ export class TransactionsController {
   @ApiResponseWrapped()
   @UseGuards(RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @ResponseMessage('Berhasil mengambil riwayat transaksi')
   @Get()
   async findAll(@Query() paginationDto: PaginationDto) {
     return this.transactionsService.findAll(paginationDto);
@@ -57,6 +64,7 @@ export class TransactionsController {
 
   @ApiOperation({ summary: 'Riwayat transaksi user yang login' })
   @ApiResponseWrapped()
+  @ResponseMessage('Berhasil mengambil riwayat transaksi Anda')
   @Get('my-history')
   async myHistory(
     @GetUser('id') userId: number,

@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
@@ -23,18 +25,21 @@ import {
   ApiNotFound,
   ApiResponseWrapped,
 } from '../../common/decorators/api-docs.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('Categories')
-@ApiResponseWrapped()
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @ApiOperation({ summary: 'Tambah kategori baru' })
+  @ApiResponseWrapped(undefined, undefined, 201)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Kategori berhasil ditambahkan')
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(createCategoryDto);
@@ -42,22 +47,27 @@ export class CategoriesController {
 
   @ApiOperation({ summary: 'List semua kategori (paginated)' })
   @ApiResponseWrapped()
+  @ResponseMessage('Berhasil mengambil daftar kategori')
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.categoriesService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Detail kategori' })
+  @ApiResponseWrapped()
   @ApiNotFound('Kategori')
+  @ResponseMessage('Detail kategori berhasil diambil')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(+id);
   }
 
   @ApiOperation({ summary: 'Update kategori' })
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @ApiAuthErrors()
   @ApiNotFound('Kategori')
+  @ResponseMessage('Kategori berhasil diubah')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Patch(':id')
@@ -69,9 +79,11 @@ export class CategoriesController {
   }
 
   @ApiOperation({ summary: 'Hapus kategori' })
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @ApiAuthErrors()
   @ApiNotFound('Kategori')
+  @ResponseMessage('Kategori berhasil dihapus')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
   @Delete(':id')

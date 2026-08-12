@@ -110,15 +110,14 @@ describe('TransactionsService', () => {
       expect(queryRunner.rollbackTransaction).not.toHaveBeenCalled();
       expect(queryRunner.release).toHaveBeenCalledTimes(1);
 
-      // Return message + dueDate
-      expect(result.message).toBe('Buku berhasil dipinjam');
-      expect(result.dueDate).toBeInstanceOf(Date);
+      // Return due_date (snake_case)
+      expect(result).toEqual({ due_date: expect.any(Date) });
 
       // dueDate default 7 hari ke depan
       const expected = new Date();
       expected.setDate(expected.getDate() + 7);
       expect(
-        Math.abs(result.dueDate.getTime() - expected.getTime()),
+        Math.abs(result.due_date.getTime() - expected.getTime()),
       ).toBeLessThan(5000);
     });
 
@@ -204,7 +203,7 @@ describe('TransactionsService', () => {
       expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
     });
 
-    it('kembali tepat waktu: fine_amount 0 dan message "Tidak ada denda"', async () => {
+    it('kembali tepat waktu: fine_amount 0', async () => {
       const bookItem = { id: 10, barcode: 'B001', status: 'BORROWED' };
       // due_date besok (belum lewat)
       const dueDate = new Date();
@@ -220,8 +219,10 @@ describe('TransactionsService', () => {
       expect(transaction.fine_amount).toBe(0);
       expect(transaction.status).toBe('RETURNED');
       expect(bookItem.status).toBe('AVAILABLE');
-      expect(result.fine).toBe('Tidak ada denda');
-      expect(result.message).toBe('Buku berhasil dikembalikan');
+      expect(result).toEqual({
+        fine_amount: 0,
+        returned_at: expect.any(Date),
+      });
       expect(queryRunner.commitTransaction).toHaveBeenCalledTimes(1);
       expect(queryRunner.rollbackTransaction).not.toHaveBeenCalled();
     });
@@ -242,7 +243,7 @@ describe('TransactionsService', () => {
       expect(transaction.fine_amount).toBe(15000);
       expect(transaction.status).toBe('RETURNED');
       expect(bookItem.status).toBe('AVAILABLE');
-      expect(result.fine).toBe('Denda Anda: Rp 15000');
+      expect(result.fine_amount).toBe(15000);
       expect(queryRunner.commitTransaction).toHaveBeenCalledTimes(1);
     });
 
@@ -260,7 +261,7 @@ describe('TransactionsService', () => {
       const result = await service.returnBook('B001');
 
       expect(transaction.fine_amount).toBe(0);
-      expect(result.fine).toBe('Tidak ada denda');
+      expect(result.fine_amount).toBe(0);
     });
 
     it('telat tepat 1 hari kalender: denda 5000', async () => {
@@ -278,7 +279,7 @@ describe('TransactionsService', () => {
       const result = await service.returnBook('B001');
 
       expect(transaction.fine_amount).toBe(5000);
-      expect(result.fine).toBe('Denda Anda: Rp 5000');
+      expect(result.fine_amount).toBe(5000);
     });
 
     it('set returned_at, simpan transaksi dan bookItem, commit', async () => {
@@ -318,10 +319,12 @@ describe('TransactionsService', () => {
 
       expect(result.data).toBe(data);
       expect(result.meta).toEqual({
-        total: 2,
         page: 1,
         limit: 10,
-        totalPages: 1,
+        total_items: 2,
+        total_pages: 1,
+        has_next_page: false,
+        has_prev_page: false,
       });
       expect(qb.where).not.toHaveBeenCalled();
     });
@@ -360,10 +363,12 @@ describe('TransactionsService', () => {
         }),
       );
       expect(result.meta).toEqual({
-        total: 1,
         page: 2,
         limit: 5,
-        totalPages: 1,
+        total_items: 1,
+        total_pages: 1,
+        has_next_page: false,
+        has_prev_page: true,
       });
     });
   });

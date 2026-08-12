@@ -8,7 +8,10 @@ import {
   Repository,
 } from 'typeorm';
 import { PaginationDto } from '../dto/pagination.dto';
-import { PaginatedResult } from '../interfaces/paginated-result.interface';
+import {
+  createPaginationMeta,
+  PaginatedResult,
+} from '../interfaces/paginated-result.interface';
 
 export interface BaseCrudOptions<TEntity extends ObjectLiteral> {
   /** Nama entitas untuk pesan NotFoundException, mis. 'Author'. */
@@ -75,12 +78,7 @@ export class BaseCrudService<
 
     return {
       data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: createPaginationMeta(page, limit, total),
     };
   }
 

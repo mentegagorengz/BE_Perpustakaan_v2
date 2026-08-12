@@ -45,5 +45,7 @@ describe('Auth login throttling (e2e)', () => {
     // Percobaan ke-6 melewati batas → ditolak rate limiter.
     const blocked = await attempt();
     expect(blocked.status).toBe(429);
+    expect(blocked.body.success).toBe(false);
+    expect(blocked.body.error.code).toBe('TOO_MANY_REQUESTS');
   });
 });

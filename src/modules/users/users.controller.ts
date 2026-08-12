@@ -16,6 +16,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { SystemRole } from '../../common/enums/role.enum';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 import {
   ApiAuthErrors,
   ApiNotFound,
@@ -35,6 +36,7 @@ export class UsersController {
   @Get()
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiResponseWrapped()
+  @ResponseMessage('Berhasil mengambil daftar user')
   findAll(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAll(paginationDto);
   }
@@ -43,6 +45,7 @@ export class UsersController {
   @Get(':id')
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiNotFound('User')
+  @ResponseMessage('Detail user berhasil diambil')
   findOne(@Param('id') id: string) {
     return this.usersService.findById(+id);
   }
@@ -51,6 +54,7 @@ export class UsersController {
   @Patch(':id/role')
   @Roles(SystemRole.SUPER_ADMIN)
   @ApiNotFound('User')
+  @ResponseMessage('Role/kategori user berhasil diubah')
   updateRole(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateRole(+id, updateUserDto);
   }
@@ -59,6 +63,7 @@ export class UsersController {
   @Delete(':id')
   @Roles(SystemRole.SUPER_ADMIN)
   @ApiNotFound('User')
+  @ResponseMessage('User berhasil dihapus')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }

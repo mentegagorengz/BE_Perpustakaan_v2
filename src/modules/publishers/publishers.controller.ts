@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PublishersService } from './publishers.service';
@@ -23,18 +25,21 @@ import {
   ApiNotFound,
   ApiResponseWrapped,
 } from '../../common/decorators/api-docs.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('Publishers')
-@ApiResponseWrapped()
 @Controller('publishers')
 export class PublishersController {
   constructor(private readonly publishersService: PublishersService) {}
 
   @ApiOperation({ summary: 'Tambah penerbit baru' })
+  @ApiResponseWrapped(undefined, undefined, 201)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Penerbit berhasil ditambahkan')
   @Post()
   create(@Body() createPublisherDto: CreatePublisherDto) {
     return this.publishersService.create(createPublisherDto);
@@ -42,24 +47,29 @@ export class PublishersController {
 
   @ApiOperation({ summary: 'List semua penerbit (paginated)' })
   @ApiResponseWrapped()
+  @ResponseMessage('Berhasil mengambil daftar penerbit')
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.publishersService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Detail penerbit' })
+  @ApiResponseWrapped()
   @ApiNotFound('Penerbit')
+  @ResponseMessage('Detail penerbit berhasil diambil')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.publishersService.findOne(+id);
   }
 
   @ApiOperation({ summary: 'Update penerbit' })
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @ApiAuthErrors()
   @ApiNotFound('Penerbit')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @ResponseMessage('Penerbit berhasil diubah')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -69,11 +79,13 @@ export class PublishersController {
   }
 
   @ApiOperation({ summary: 'Hapus penerbit' })
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @ApiAuthErrors()
   @ApiNotFound('Penerbit')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
+  @ResponseMessage('Penerbit berhasil dihapus')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.publishersService.remove(+id);

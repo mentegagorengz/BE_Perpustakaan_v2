@@ -10,13 +10,14 @@ import {
   ApiAuthErrors,
   ApiResponseWrapped,
 } from '../../common/decorators/api-docs.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('Policy')
 @ApiResponseWrapped()
 @ApiBearerAuth()
 @ApiAuthErrors()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('policy')
+@Controller('policies')
 export class PolicyController {
   constructor(private readonly policyService: PolicyService) {}
 
@@ -24,6 +25,7 @@ export class PolicyController {
   @ApiResponseWrapped()
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Get()
+  @ResponseMessage('Kebijakan berhasil diambil')
   getPolicy() {
     return this.policyService.getPolicy();
   }
@@ -32,6 +34,7 @@ export class PolicyController {
   @ApiResponseWrapped()
   @Roles(SystemRole.SUPER_ADMIN)
   @Patch()
+  @ResponseMessage('Kebijakan berhasil diperbarui')
   update(@Body() dto: UpdatePolicyDto) {
     return this.policyService.update(dto);
   }

@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository, Like } from 'typeorm';
 import { User } from './entities/user.entity';
 import { PaginationDto } from '../../common/dto/pagination.dto';
-import { PaginatedResult } from '../../common/interfaces/paginated-result.interface';
+import {
+  createPaginationMeta,
+  PaginatedResult,
+} from '../../common/interfaces/paginated-result.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -64,12 +67,7 @@ export class UsersService {
 
     return {
       data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: createPaginationMeta(page, limit, total),
     };
   }
 

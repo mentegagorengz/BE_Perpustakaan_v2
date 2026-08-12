@@ -14,6 +14,7 @@ import {
   ApiAuthErrors,
   ApiResponseWrapped,
 } from '../../common/decorators/api-docs.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('Dashboard')
 @ApiResponseWrapped()
@@ -31,6 +32,7 @@ export class DashboardController {
   @Get('summary')
   @ApiResponseWrapped()
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
+  @ResponseMessage('Statistik dashboard berhasil diambil')
   async getSummary() {
     return await this.dashboardService.getSummary();
   }

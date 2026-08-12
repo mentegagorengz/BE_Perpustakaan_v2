@@ -56,7 +56,7 @@ describe('LanguagesService', () => {
   });
 
   describe('findAll', () => {
-    it('should return paginated result with correct meta and totalPages = ceil(total/limit)', async () => {
+    it('should return paginated result with correct meta (snake_case, has_next_page/has_prev_page)', async () => {
       const data = [{ id: 1, name: 'A' }] as Language[];
       repo.findAndCount.mockResolvedValue([data, 25]);
 
@@ -70,7 +70,14 @@ describe('LanguagesService', () => {
       });
       expect(result).toEqual({
         data,
-        meta: { total: 25, page: 2, limit: 10, totalPages: 3 },
+        meta: {
+          page: 2,
+          limit: 10,
+          total_items: 25,
+          total_pages: 3,
+          has_next_page: true,
+          has_prev_page: true,
+        },
       });
     });
 
@@ -86,10 +93,12 @@ describe('LanguagesService', () => {
         order: { name: 'ASC' },
       });
       expect(result.meta).toEqual({
-        total: 0,
         page: 1,
         limit: 10,
-        totalPages: 0,
+        total_items: 0,
+        total_pages: 0,
+        has_next_page: false,
+        has_prev_page: false,
       });
     });
 

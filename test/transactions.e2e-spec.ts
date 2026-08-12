@@ -71,7 +71,7 @@ describe('Transactions (e2e)', () => {
       .send({ email: user.email, password: user.password })
       .expect(200);
     const setCookie = loginRes.headers['set-cookie'] as unknown as string[];
-    const cookieMatch = /auth_token=([^;]+)/.exec(setCookie.join(';'));
+    const cookieMatch = /access_token=([^;]+)/.exec(setCookie.join(';'));
     token = cookieMatch ? cookieMatch[1] : '';
 
     // 2. Seed data referensi + buku + eksemplar langsung via DB (barcode unik).
@@ -153,7 +153,9 @@ describe('Transactions (e2e)', () => {
       .send({ barcode })
       .expect(201);
 
-    expect(res.body.data.message).toBe('Buku berhasil dipinjam');
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe('Buku berhasil dipinjam');
+    expect(res.body.data.due_date).toEqual(expect.any(String));
 
     const rows = await dataSource.query(
       'SELECT status FROM book_items WHERE id = $1',
@@ -162,12 +164,15 @@ describe('Transactions (e2e)', () => {
     expect(rows[0].status).toBe('BORROWED');
   });
 
-  it('borrow: barcode yang sudah BORROWED → 400', async () => {
-    await request(app.getHttpServer())
+  it('borrow: barcode yang sudah BORROWED → 400 envelope error', async () => {
+    const res = await request(app.getHttpServer())
       .post('/api/v1/transactions/borrow')
       .set('Authorization', `Bearer ${token}`)
       .send({ barcode })
       .expect(400);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('BAD_REQUEST');
   });
 
   it('return tepat waktu: fine_amount 0 (number, bukan string) + status AVAILABLE', async () => {
@@ -176,7 +181,9 @@ describe('Transactions (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(res.body.data.fine).toBe('Tidak ada denda');
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe('Buku berhasil dikembalikan');
+    expect(res.body.data.fine_amount).toBe(0);
 
     // Verifikasi fine_amount dari DB terbaca sebagai number (transformer bekerja).
     const rows = await dataSource.query(
@@ -225,7 +232,7 @@ describe('Transactions (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(res.body.data.fine).toBe('Denda Anda: Rp 15000');
+    expect(res.body.data.fine_amount).toBe(15000);
 
     // Ambil transaksi terakhir (yang baru dikembalikan) dan pastikan number.
     const rows = await dataSource.query(

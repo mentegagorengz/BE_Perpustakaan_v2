@@ -9,6 +9,8 @@ import {
   Query,
   UseGuards,
   ParseArrayPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { BooksService } from './books.service';
@@ -25,18 +27,21 @@ import {
   ApiNotFound,
   ApiResponseWrapped,
 } from '../../common/decorators/api-docs.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('Books')
-@ApiResponseWrapped()
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @ApiOperation({ summary: 'Tambah buku baru' })
+  @ApiResponseWrapped(undefined, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiAuthErrors()
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Buku berhasil ditambahkan')
   @Post()
   async create(@Body() createBookDto: CreateBookDto) {
     return this.booksService.create(createBookDto);
@@ -44,62 +49,77 @@ export class BooksController {
 
   @ApiOperation({ summary: 'List semua buku (paginated)' })
   @ApiResponseWrapped()
+  @ResponseMessage('Berhasil mengambil daftar buku')
   @Get()
   async findAll(@Query() paginationDto: PaginationDto) {
     return this.booksService.findAll(paginationDto);
   }
 
   @ApiOperation({ summary: 'Detail buku beserta items' })
+  @ApiResponseWrapped()
   @ApiNotFound('Buku')
+  @ResponseMessage('Detail buku berhasil diambil')
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.booksService.findOne(+id);
   }
 
   @ApiOperation({ summary: 'Update buku' })
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiAuthErrors()
   @ApiNotFound('Buku')
+  @ResponseMessage('Buku berhasil diubah')
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
     return this.booksService.update(+id, updateBookDto);
   }
 
   @ApiOperation({ summary: 'Hapus buku' })
+  @ApiResponseWrapped()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN)
   @ApiAuthErrors()
   @ApiNotFound('Buku')
+  @ResponseMessage('Buku berhasil dihapus')
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.booksService.remove(+id);
   }
 
   @ApiOperation({ summary: 'Tambah eksemplar fisik buku' })
+  @ApiResponseWrapped(undefined, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiAuthErrors()
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Eksemplar buku berhasil ditambahkan')
   @Post('items')
   async createItem(@Body() createBookItemDto: CreateBookItemDto) {
     return this.booksService.createItem(createBookItemDto);
   }
 
   @ApiOperation({ summary: 'List eksemplar sebuah buku' })
+  @ApiResponseWrapped()
   @ApiNotFound('Buku')
+  @ResponseMessage('Daftar eksemplar buku berhasil diambil')
   @Get(':id/items')
   async findAllItems(@Param('id') id: string) {
     return this.booksService.findAllItems(+id);
   }
 
   @ApiOperation({ summary: 'Tambah banyak buku sekaligus' })
+  @ApiResponseWrapped(undefined, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ApiAuthErrors()
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Buku berhasil ditambahkan secara massal')
   @Post('bulk')
   async createMany(
     @Body(new ParseArrayPipe({ items: CreateBookDto }))

@@ -51,10 +51,12 @@ describe('ActivityLogsService', () => {
       }),
     );
     expect(result.meta).toEqual({
-      total: 3,
       page: 2,
       limit: 5,
-      totalPages: 1,
+      total_items: 3,
+      total_pages: 1,
+      has_next_page: false,
+      has_prev_page: true,
     });
   });
 
@@ -66,7 +68,7 @@ describe('ActivityLogsService', () => {
     expect(repo.findAndCount).toHaveBeenCalledWith(
       expect.objectContaining({ skip: 0, take: 10 }),
     );
-    expect(result.meta.totalPages).toBe(0);
+    expect(result.meta.total_pages).toBe(0);
   });
 
   it('create menyimpan log dengan relasi user bila disertakan', async () => {

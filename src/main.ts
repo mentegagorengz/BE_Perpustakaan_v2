@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -7,6 +8,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { buildOpenApiDocument } from './config/swagger.config';
 import { validateEnvironment } from './config/env.validation';
+import { validationExceptionFactory } from './common/utils/validation-errors';
 
 async function bootstrap() {
   validateEnvironment(process.env);
@@ -22,7 +24,9 @@ async function bootstrap() {
   // - Bila diset: hanya origin tersebut yang diizinkan, boleh pakai credentials.
   // - Bila tidak diset di production: fail-closed (tolak semua cross-origin).
   // - Bila tidak diset di non-production: allow-all TANPA credentials (dev lokal).
-  const allowedOrigins = (process.env.CORS_ORIGIN ?? '')
+  const allowedOrigins = (
+    process.env.CORS_ORIGIN || 'http://localhost:3001,http://localhost:3000'
+  )
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
@@ -32,7 +36,7 @@ async function bootstrap() {
   } else if (process.env.NODE_ENV === 'production') {
     app.enableCors({ origin: false });
   } else {
-    app.enableCors({ origin: true });
+    app.enableCors({ origin: true, credentials: true });
   }
 
   app.useGlobalPipes(
@@ -43,6 +47,7 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
+      exceptionFactory: validationExceptionFactory,
     }),
   );
 

@@ -72,10 +72,12 @@ describe('BaseCrudService', () => {
 
   describe('findAll', () => {
     const buildMeta = (total: number, page: number, limit: number) => ({
-      total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      total_items: total,
+      total_pages: Math.ceil(total / limit),
+      has_next_page: page < Math.ceil(total / limit),
+      has_prev_page: page > 1,
     });
 
     it('pagination default page 1 & limit 10, tanpa search → where kosong', async () => {
@@ -108,7 +110,7 @@ describe('BaseCrudService', () => {
       expect((args.where as { name: unknown }).name).toEqual(Like('%martin%'));
     });
 
-    it('menghitung totalPages = ceil(total/limit)', async () => {
+    it('menghitung total_pages = ceil(total/limit) + has_next/prev', async () => {
       repo.findAndCount.mockResolvedValue([[], 25]);
 
       const result = await service.findAll({ page: 2, limit: 10 });

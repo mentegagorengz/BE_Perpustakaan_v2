@@ -10,6 +10,7 @@ import {
   ApiAuthErrors,
   ApiResponseWrapped,
 } from '../../common/decorators/api-docs.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('Activity Logs')
 @ApiResponseWrapped()
@@ -24,6 +25,7 @@ export class ActivityLogsController {
   @Roles(SystemRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Melihat seluruh log aktivitas (Super Admin Only)' })
   @ApiResponseWrapped()
+  @ResponseMessage('Berhasil mengambil log aktivitas')
   findAll(@Query() paginationDto: PaginationDto) {
     return this.activityLogsService.findAll(paginationDto);
   }

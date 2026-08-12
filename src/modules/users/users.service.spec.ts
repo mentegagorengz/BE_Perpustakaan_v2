@@ -163,7 +163,14 @@ describe('UsersService', () => {
       });
       expect(result).toEqual({
         data: users,
-        meta: { total: 1, page: 1, limit: 10, totalPages: 1 },
+        meta: {
+          page: 1,
+          limit: 10,
+          total_items: 1,
+          total_pages: 1,
+          has_next_page: false,
+          has_prev_page: false,
+        },
       });
     });
 
@@ -182,7 +189,7 @@ describe('UsersService', () => {
         take: 10,
         order: { created_at: 'DESC' },
       });
-      expect(result.meta.totalPages).toBe(3);
+      expect(result.meta.total_pages).toBe(3);
       expect(result.meta.page).toBe(2);
     });
 

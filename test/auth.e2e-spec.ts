@@ -76,6 +76,8 @@ describe('Auth (e2e)', () => {
       .send(user)
       .expect(201);
 
+    expect(res.body.success).toBe(true);
+    expect(res.body.error).toBeUndefined();
     expect(res.body.data).toBeDefined();
     expect(res.body.data.email).toBe(user.email);
     expect(res.body.data.password).toBeUndefined();
@@ -87,11 +89,15 @@ describe('Auth (e2e)', () => {
       .send(user)
       .expect(409);
 
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('CONFLICT');
     expect(res.body.message).toBe('Data registrasi sudah terdaftar');
   });
 
   it('login: password salah → 401 pesan generik', async () => {
     const res = await loginRequest({ password: 'wrong-password' }).expect(401);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('UNAUTHORIZED');
     expect(res.body.message).toBe('Invalid email or password');
   });
 
@@ -101,12 +107,15 @@ describe('Auth (e2e)', () => {
       .send({ email: `nope-${unique}@example.com`, password: 'whatever12' })
       .expect(401);
 
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('UNAUTHORIZED');
     expect(res.body.message).toBe('Invalid email or password');
   });
 
   it('login: accessToken via Set-Cookie HttpOnly (bukan body), refreshToken di body, tanpa password', async () => {
     const res = await loginRequest().expect(200);
 
+    expect(res.body.success).toBe(true);
     expect(res.body.data.accessToken).toBeUndefined();
     expect(res.body.data.refreshToken).toEqual(expect.any(String));
     expect(res.body.data.user.password).toBeUndefined();
@@ -114,7 +123,8 @@ describe('Auth (e2e)', () => {
 
     const setCookie = res.headers['set-cookie'] as unknown as string[];
     const joined = setCookie.join(';');
-    expect(joined).toContain('auth_token=');
+    expect(joined).toContain('access_token=');
+    expect(joined).toContain('refresh_token=');
     expect(joined.toLowerCase()).toContain('httponly');
 
     shared.accessTokenCookie = setCookieValue(res);
@@ -142,8 +152,13 @@ describe('Auth (e2e)', () => {
     expect(graceRes.body.data.refreshToken).toEqual(expect.any(String));
   });
 
-  it('auth: profile tanpa token → 401', async () => {
-    await request(app.getHttpServer()).get('/api/v1/auth/profile').expect(401);
+  it('auth: profile tanpa token → 401 envelope error', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/v1/auth/profile')
+      .expect(401);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('UNAUTHORIZED');
   });
 
   it('auth: profile diproteksi — memakai Cookie accessToken hasil login → 200', async () => {
@@ -162,16 +177,47 @@ describe('Auth (e2e)', () => {
       .send({ refreshToken })
       .expect(200);
 
-    await request(app.getHttpServer())
+    const reused = await request(app.getHttpServer())
       .post('/api/v1/auth/refresh')
       .send({ refreshToken })
       .expect(401);
+    expect(reused.body.success).toBe(false);
+    expect(reused.body.error.code).toBe('UNAUTHORIZED');
   });
 
-  it('register: body tidak valid → 400 dari ValidationPipe', async () => {
-    await request(app.getHttpServer())
+  it('register: body tidak valid → 400 envelope error dengan details array', async () => {
+    const res = await request(app.getHttpServer())
       .post('/api/v1/auth/register')
       .send({ email: 'not-an-email', password: 'short' })
       .expect(400);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('BAD_REQUEST');
+    expect(Array.isArray(res.body.error.details)).toBe(true);
+    expect(res.body.error.details[0]).toEqual(
+      expect.objectContaining({
+        field: expect.any(String),
+        message: expect.any(String),
+      }),
+    );
+  });
+
+  it('list publik paginated (books) → data array + meta top-level', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/v1/books?page=1&limit=5')
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.meta).toEqual(
+      expect.objectContaining({
+        page: 1,
+        limit: 5,
+        total_items: expect.any(Number),
+        total_pages: expect.any(Number),
+        has_next_page: expect.any(Boolean),
+        has_prev_page: expect.any(Boolean),
+      }),
+    );
   });
 });

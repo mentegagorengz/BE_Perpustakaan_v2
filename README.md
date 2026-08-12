@@ -43,7 +43,7 @@ src/
 - **Articles** — CRUD artikel/berita
 - **Policy** — Konfigurasi denda & durasi pinjam (dapat diubah runtime)
 - **Pagination & search** — Semua endpoint list
-- **Response seragam** — `{ statusCode, message, data }` global
+- **Response seragam** — `{ success, message, data, meta? }` global; error `{ success: false, message, error: { code, details } }`; meta snake_case: `total_items | total_pages | has_next_page | has_prev_page`
 - **Swagger/OpenAPI** — Dokumentasi interaktif di `/api/docs`
 - **Rate limiting** — 100 request/menit global
 

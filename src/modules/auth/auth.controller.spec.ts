@@ -8,12 +8,16 @@ describe('AuthController', () => {
   let service: {
     register: jest.Mock;
     login: jest.Mock;
+    rotateRefreshTokenWithGracePeriod: jest.Mock;
+    logout: jest.Mock;
   };
 
   beforeEach(async () => {
     service = {
       register: jest.fn(),
       login: jest.fn(),
+      rotateRefreshTokenWithGracePeriod: jest.fn(),
+      logout: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -44,7 +48,7 @@ describe('AuthController', () => {
     expect(service.register).toHaveBeenCalledWith(dto);
   });
 
-  it('login should set the access token cookie and return the token payload', async () => {
+  it('login should set access_token and refresh_token cookies and return response payload', async () => {
     const dto = { email: 'user@example.com', password: 'secret123' } as never;
     const tokenPayload = {
       accessToken: 'jwt',
@@ -58,12 +62,43 @@ describe('AuthController', () => {
     } as never;
 
     await expect(controller.login(dto, response)).resolves.toEqual({
-      message: 'Login successful',
       user: { id: 1 },
       refreshToken: 'refresh',
     });
     expect(service.login).toHaveBeenCalledWith(dto);
-    expect((response as { cookie: jest.Mock }).cookie).toHaveBeenCalled();
+    expect((response as { cookie: jest.Mock }).cookie).toHaveBeenCalledTimes(2);
+  });
+
+  it('refresh should read token from cookie when body is empty', async () => {
+    service.rotateRefreshTokenWithGracePeriod.mockResolvedValue({
+      accessToken: 'new_jwt',
+      refreshToken: 'new_refresh',
+    });
+
+    const req = { cookies: { refresh_token: 'cookie_refresh_token' } } as never;
+    const response = { cookie: jest.fn() } as never;
+
+    const result = await controller.refresh(req, {}, response);
+    expect(result).toEqual({
+      accessToken: 'new_jwt',
+      refreshToken: 'new_refresh',
+    });
+    expect(service.rotateRefreshTokenWithGracePeriod).toHaveBeenCalledWith(
+      'cookie_refresh_token',
+    );
+    expect((response as { cookie: jest.Mock }).cookie).toHaveBeenCalledTimes(2);
+  });
+
+  it('logout should clear cookies and call logout service', async () => {
+    service.logout.mockResolvedValue(undefined);
+    const req = { cookies: { refresh_token: 'cookie_refresh' } } as never;
+    const response = { clearCookie: jest.fn() } as never;
+
+    await expect(controller.logout(req, {}, response)).resolves.toBeUndefined();
+    expect(service.logout).toHaveBeenCalledWith('cookie_refresh');
+    expect(
+      (response as { clearCookie: jest.Mock }).clearCookie,
+    ).toHaveBeenCalledTimes(2);
   });
 
   it('getProfile returns the authenticated user as attached to the request', async () => {

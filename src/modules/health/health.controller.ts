@@ -10,6 +10,7 @@ import {
   HealthCheckService,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('Health')
 @Controller('health')
@@ -23,6 +24,7 @@ export class HealthController {
   @ApiOperation({
     summary: 'Status kesehatan aplikasi dan koneksi PostgreSQL',
   })
+  @ResponseMessage('Status kesehatan aplikasi dan database')
   @ApiOkResponse({
     description: 'Aplikasi dan database sehat',
     schema: {
