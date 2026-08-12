@@ -71,7 +71,7 @@ src/
 1. **Clone**
    ```bash
    git clone <repo-url>
-   cd be-perpustakaan.v2
+   cd BE_Perpustakaan_v2
    ```
 
 2. **Install**
