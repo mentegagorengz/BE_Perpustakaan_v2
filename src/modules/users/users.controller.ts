@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { User } from './entities/user.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -26,7 +27,7 @@ import {
 @ApiTags('Users')
 @ApiBearerAuth()
 @ApiAuthErrors()
-@ApiResponseWrapped()
+@ApiResponseWrapped(User)
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
@@ -35,7 +36,7 @@ export class UsersController {
   @ApiOperation({ summary: 'List semua user (paginated)' })
   @Get()
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(undefined, undefined, undefined, true)
   @ResponseMessage('Berhasil mengambil daftar user')
   findAll(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAll(paginationDto);

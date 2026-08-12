@@ -73,12 +73,14 @@ export function ApiNotFound(resource = 'Resource') {
  * Envelope sukses `{ success, message, data, meta? }` untuk status HTTP yang
  * diberikan (default 200). Bila `model` diberikan, `data` di-ref ke schema
  * model itu (single atau array); tanpa model, `data` generik (object).
- * `meta` didokumentasikan untuk list/paginasi (snake_case, §2.B).
+ * `meta` HANYA didokumentasikan untuk endpoint list/paginasi (snake_case, §2.B)
+ * — set `meta: true`; endpoint data tunggal wajib tanpa `meta`.
  */
 export function ApiResponseWrapped(
   model?: Type<unknown>,
   description = 'Success',
   status = HttpStatus.OK,
+  meta = false,
 ) {
   const data = model
     ? {
@@ -90,24 +92,29 @@ export function ApiResponseWrapped(
       }
     : { type: 'object' as const, nullable: true };
 
+  const properties: Record<string, unknown> = {
+    success: { type: 'boolean' as const, example: true },
+    message: { type: 'string' as const, example: description },
+    data,
+  };
+
+  if (meta) {
+    properties.meta = {
+      type: 'object' as const,
+      properties: {
+        page: { type: 'number' as const, example: 1 },
+        limit: { type: 'number' as const, example: 10 },
+        total_items: { type: 'number' as const, example: 0 },
+        total_pages: { type: 'number' as const, example: 0 },
+        has_next_page: { type: 'boolean' as const, example: false },
+        has_prev_page: { type: 'boolean' as const, example: false },
+      },
+    };
+  }
+
   const schema = {
     type: 'object' as const,
-    properties: {
-      success: { type: 'boolean' as const, example: true },
-      message: { type: 'string' as const, example: description },
-      data,
-      meta: {
-        type: 'object' as const,
-        properties: {
-          page: { type: 'number' as const, example: 1 },
-          limit: { type: 'number' as const, example: 10 },
-          total_items: { type: 'number' as const, example: 0 },
-          total_pages: { type: 'number' as const, example: 0 },
-          has_next_page: { type: 'boolean' as const, example: false },
-          has_prev_page: { type: 'boolean' as const, example: false },
-        },
-      },
-    },
+    properties,
     required: ['success', 'message', 'data'],
   };
 

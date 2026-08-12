@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
+import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -33,7 +34,7 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @ApiOperation({ summary: 'Tambah kategori baru' })
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Category, undefined, 201)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -46,7 +47,7 @@ export class CategoriesController {
   }
 
   @ApiOperation({ summary: 'List semua kategori (paginated)' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Category, undefined, undefined, true)
   @ResponseMessage('Berhasil mengambil daftar kategori')
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
@@ -54,7 +55,7 @@ export class CategoriesController {
   }
 
   @ApiOperation({ summary: 'Detail kategori' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Category)
   @ApiNotFound('Kategori')
   @ResponseMessage('Detail kategori berhasil diambil')
   @Get(':id')
@@ -63,7 +64,7 @@ export class CategoriesController {
   }
 
   @ApiOperation({ summary: 'Update kategori' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Category)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @ApiNotFound('Kategori')

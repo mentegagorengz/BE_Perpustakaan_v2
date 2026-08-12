@@ -11,6 +11,7 @@ import {
   JoinTable,
   OneToMany,
 } from 'typeorm';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { Category } from '../../categories/entities/category.entity';
 import { Publisher } from '../../publishers/entities/publisher.entity';
 import { Language } from '../../languages/entities/language.entity';
@@ -72,6 +73,7 @@ export class Book {
   @UpdateDateColumn()
   updated_at: Date;
 
+  @ApiHideProperty()
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt?: Date;
 }

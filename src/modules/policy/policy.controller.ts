@@ -1,6 +1,7 @@
 import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PolicyService } from './policy.service';
+import { Policy } from './entities/policy.entity';
 import { UpdatePolicyDto } from './dto/update-policy.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -13,7 +14,7 @@ import {
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('Policy')
-@ApiResponseWrapped()
+@ApiResponseWrapped(Policy)
 @ApiBearerAuth()
 @ApiAuthErrors()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -22,7 +23,7 @@ export class PolicyController {
   constructor(private readonly policyService: PolicyService) {}
 
   @ApiOperation({ summary: 'Ambil kebijakan aktif (singleton)' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Policy)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @Get()
   @ResponseMessage('Kebijakan berhasil diambil')

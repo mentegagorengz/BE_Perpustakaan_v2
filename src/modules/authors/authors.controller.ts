@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthorsService } from './authors.service';
+import { Author } from './entities/author.entity';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -33,7 +34,7 @@ export class AuthorsController {
   constructor(private readonly authorsService: AuthorsService) {}
 
   @ApiOperation({ summary: 'Tambah penulis baru' })
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Author, undefined, 201)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -46,7 +47,7 @@ export class AuthorsController {
   }
 
   @ApiOperation({ summary: 'List semua penulis (paginated)' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Author, undefined, undefined, true)
   @ResponseMessage('Berhasil mengambil daftar penulis')
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
@@ -54,7 +55,7 @@ export class AuthorsController {
   }
 
   @ApiOperation({ summary: 'Detail penulis' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Author)
   @ApiNotFound('Penulis')
   @ResponseMessage('Detail penulis berhasil diambil')
   @Get(':id')
@@ -63,7 +64,7 @@ export class AuthorsController {
   }
 
   @ApiOperation({ summary: 'Update penulis' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Author)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @ApiNotFound('Penulis')

@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PublishersService } from './publishers.service';
+import { Publisher } from './entities/publisher.entity';
 import { CreatePublisherDto } from './dto/create-publisher.dto';
 import { UpdatePublisherDto } from './dto/update-publisher.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -33,7 +34,7 @@ export class PublishersController {
   constructor(private readonly publishersService: PublishersService) {}
 
   @ApiOperation({ summary: 'Tambah penerbit baru' })
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Publisher, undefined, 201)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -46,7 +47,7 @@ export class PublishersController {
   }
 
   @ApiOperation({ summary: 'List semua penerbit (paginated)' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Publisher, undefined, undefined, true)
   @ResponseMessage('Berhasil mengambil daftar penerbit')
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
@@ -54,7 +55,7 @@ export class PublishersController {
   }
 
   @ApiOperation({ summary: 'Detail penerbit' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Publisher)
   @ApiNotFound('Penerbit')
   @ResponseMessage('Detail penerbit berhasil diambil')
   @Get(':id')
@@ -63,7 +64,7 @@ export class PublishersController {
   }
 
   @ApiOperation({ summary: 'Update penerbit' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Publisher)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @ApiNotFound('Penerbit')

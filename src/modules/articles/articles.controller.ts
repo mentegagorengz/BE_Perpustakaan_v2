@@ -14,6 +14,7 @@ import {
 import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
+import { Article } from './entities/article.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -44,7 +45,7 @@ export class ArticlesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Detail berita' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Article)
   @ApiNotFound('Berita')
   @ResponseMessage('Detail berita berhasil diambil')
   findOne(@Param('id') id: string) {
@@ -52,7 +53,7 @@ export class ArticlesController {
   }
 
   @Post()
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Article, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
@@ -67,7 +68,7 @@ export class ArticlesController {
   }
 
   @Patch(':id')
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Article)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
@@ -93,7 +94,7 @@ export class ArticlesController {
   }
 
   @Post('bulk')
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Article, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)

@@ -23,6 +23,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
@@ -40,7 +41,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Register user baru' })
   @ApiResponseWrapped(
-    undefined,
+    User,
     'Registrasi berhasil, user dibuat (password tidak pernah dikembalikan)',
     HttpStatus.CREATED,
   )

@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { TransactionsService } from './transactions.service';
+import { Transaction } from './entities/transaction.entity';
 import { BorrowBookDto } from './dto/borrow-book.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -34,7 +35,7 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @ApiOperation({ summary: 'Pinjam buku' })
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Transaction, undefined, 201)
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Buku berhasil dipinjam')
   @Post('borrow')
@@ -43,7 +44,7 @@ export class TransactionsController {
   }
 
   @ApiOperation({ summary: 'Kembalikan buku berdasarkan barcode' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Transaction)
   @ResponseMessage('Buku berhasil dikembalikan')
   @UseGuards(RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
@@ -53,7 +54,7 @@ export class TransactionsController {
   }
 
   @ApiOperation({ summary: 'Riwayat semua transaksi (paginated)' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Transaction, undefined, undefined, true)
   @UseGuards(RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
   @ResponseMessage('Berhasil mengambil riwayat transaksi')
@@ -63,7 +64,7 @@ export class TransactionsController {
   }
 
   @ApiOperation({ summary: 'Riwayat transaksi user yang login' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Transaction, undefined, undefined, true)
   @ResponseMessage('Berhasil mengambil riwayat transaksi Anda')
   @Get('my-history')
   async myHistory(

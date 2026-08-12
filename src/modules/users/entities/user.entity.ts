@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { SystemRole, UserCategory } from '../../../common/enums/role.enum';
 
 @Entity('users')
@@ -21,6 +22,8 @@ export class User {
   @Column()
   email: string;
 
+  // Tidak pernah dikirim ke client; disembunyikan juga dari schema OpenAPI.
+  @ApiHideProperty()
   @Column({ select: false })
   password: string;
 
@@ -47,6 +50,7 @@ export class User {
   @UpdateDateColumn()
   updated_at: Date;
 
+  @ApiHideProperty()
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt?: Date;
 }

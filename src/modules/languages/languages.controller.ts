@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { LanguagesService } from './languages.service';
+import { Language } from './entities/language.entity';
 import { CreateLanguageDto } from './dto/create-language.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -33,7 +34,7 @@ export class LanguagesController {
   constructor(private readonly languagesService: LanguagesService) {}
 
   @ApiOperation({ summary: 'Tambah bahasa baru' })
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Language, undefined, 201)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -46,7 +47,7 @@ export class LanguagesController {
   }
 
   @ApiOperation({ summary: 'List semua bahasa (paginated)' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Language, undefined, undefined, true)
   @ResponseMessage('Berhasil mengambil daftar bahasa')
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
@@ -54,7 +55,7 @@ export class LanguagesController {
   }
 
   @ApiOperation({ summary: 'Detail bahasa' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Language)
   @ApiNotFound('Bahasa')
   @ResponseMessage('Detail bahasa berhasil diambil')
   @Get(':id')
@@ -63,7 +64,7 @@ export class LanguagesController {
   }
 
   @ApiOperation({ summary: 'Update bahasa' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Language)
   @ApiBearerAuth()
   @ApiAuthErrors()
   @ApiNotFound('Bahasa')

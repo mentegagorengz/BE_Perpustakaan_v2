@@ -14,6 +14,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { BooksService } from './books.service';
+import { Book } from './entities/book.entity';
+import { BookItem } from './entities/book-item.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { CreateBookItemDto } from './dto/create-item.dto';
@@ -35,7 +37,7 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @ApiOperation({ summary: 'Tambah buku baru' })
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Book, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
@@ -48,7 +50,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'List semua buku (paginated)' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Book, undefined, undefined, true)
   @ResponseMessage('Berhasil mengambil daftar buku')
   @Get()
   async findAll(@Query() paginationDto: PaginationDto) {
@@ -56,7 +58,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'Detail buku beserta items' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Book)
   @ApiNotFound('Buku')
   @ResponseMessage('Detail buku berhasil diambil')
   @Get(':id')
@@ -65,7 +67,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'Update buku' })
-  @ApiResponseWrapped()
+  @ApiResponseWrapped(Book)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
@@ -91,7 +93,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'Tambah eksemplar fisik buku' })
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(BookItem, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)
@@ -113,7 +115,7 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: 'Tambah banyak buku sekaligus' })
-  @ApiResponseWrapped(undefined, undefined, 201)
+  @ApiResponseWrapped(Book, undefined, 201)
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(SystemRole.SUPER_ADMIN, SystemRole.STAFF)

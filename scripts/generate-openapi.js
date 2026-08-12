@@ -1,19 +1,20 @@
-import { NestFactory } from '@nestjs/core';
-import { writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
-import { AppModule } from '../src/app.module';
-import { buildOpenApiDocument } from '../src/config/swagger.config';
-
 /**
- * Mengekspor spesifikasi OpenAPI ke `openapi.json` di root project TANPA
+ * Ekspor spesifikasi OpenAPI ke `openapi.json` di root project TANPA
  * menyalakan server atau koneksi database.
  *
- * Kuncinya `preview: true`: Nest membangun graf modul untuk keperluan metadata
- * (yang dibutuhkan SwaggerModule) tetapi TIDAK meng-instantiate provider atau
- * menjalankan lifecycle hook — jadi TypeOrmModule tidak mencoba connect ke DB.
+ * Wajib dijalankan SETELAH `npm run build` (nest build) karena schema model
+ * di-generate oleh plugin @nestjs/swagger (introspectComments) saat kompilasi
+ * — module di-import dari `dist` agar metadata `_OPENAPI_METADATA_FACTORY`
+ * tersedia.
  *
  * Jalankan: `npm run openapi:generate`
  */
+const { NestFactory } = require('@nestjs/core');
+const { writeFileSync, mkdirSync } = require('fs');
+const { join } = require('path');
+const { AppModule } = require('../dist/app.module');
+const { buildOpenApiDocument } = require('../dist/config/swagger.config');
+
 async function generate() {
   const app = await NestFactory.create(AppModule, {
     preview: true,
@@ -30,12 +31,10 @@ async function generate() {
   await app.close();
 
   const pathCount = Object.keys(document.paths ?? {}).length;
-  // eslint-disable-next-line no-console
   console.log(`✅ openapi.json ditulis (${pathCount} path) → ${outFile}`);
 }
 
 generate().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error('Gagal generate OpenAPI:', err);
   process.exit(1);
 });

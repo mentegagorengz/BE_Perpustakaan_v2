@@ -66,7 +66,17 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/ActivityLog"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ActivityLog"
+                          }
+                        }
+                      ],
                       "nullable": true
                     },
                     "meta": {
@@ -267,37 +277,18 @@
                       "example": "Registrasi berhasil, user dibuat (password tidak pernah dikembalikan)"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/User"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/User"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -462,35 +453,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -767,59 +729,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Success"
-                    },
-                    "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "message",
-                    "data"
-                  ]
+                  "$ref": "#/components/schemas/User"
                 }
               }
             }
@@ -1023,62 +937,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Success"
-                    },
-                    "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "message",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": ""
           },
           "401": {
             "description": "Token tidak ada / tidak valid",
@@ -1291,59 +1150,11 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Success"
-                    },
-                    "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "message",
-                    "data"
-                  ]
+                  "$ref": "#/components/schemas/User"
                 }
               }
             }
@@ -1565,37 +1376,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Category"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Category"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -1798,7 +1590,17 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Category"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Category"
+                          }
+                        }
+                      ],
                       "nullable": true
                     },
                     "meta": {
@@ -1877,37 +1679,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Category"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Category"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -2022,37 +1805,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Category"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Category"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -2280,35 +2044,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -2537,37 +2272,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Author"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Author"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -2770,7 +2486,17 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Author"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Author"
+                          }
+                        }
+                      ],
                       "nullable": true
                     },
                     "meta": {
@@ -2849,37 +2575,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Author"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Author"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -2994,37 +2701,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Author"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Author"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -3252,35 +2940,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -3509,37 +3168,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Publisher"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Publisher"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -3742,7 +3382,17 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Publisher"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Publisher"
+                          }
+                        }
+                      ],
                       "nullable": true
                     },
                     "meta": {
@@ -3821,37 +3471,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Publisher"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Publisher"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -3966,37 +3597,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Publisher"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Publisher"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -4224,35 +3836,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -4481,37 +4064,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Language"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Language"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -4714,7 +4278,17 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Language"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Language"
+                          }
+                        }
+                      ],
                       "nullable": true
                     },
                     "meta": {
@@ -4793,37 +4367,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Language"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Language"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -4938,37 +4493,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Language"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Language"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -5196,35 +4732,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -5453,37 +4960,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Book"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Book"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -5686,7 +5174,17 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Book"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Book"
+                          }
+                        }
+                      ],
                       "nullable": true
                     },
                     "meta": {
@@ -5765,37 +5263,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Book"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Book"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -5910,37 +5389,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Book"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Book"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -6168,35 +5628,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -6425,37 +5856,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/BookItem"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/BookItem"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -6627,35 +6039,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -6766,37 +6149,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Book"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Book"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -6967,37 +6331,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Transaction"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Transaction"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -7167,37 +6512,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Transaction"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Transaction"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -7402,7 +6728,17 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Transaction"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Transaction"
+                          }
+                        }
+                      ],
                       "nullable": true
                     },
                     "meta": {
@@ -7637,7 +6973,17 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Transaction"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Transaction"
+                          }
+                        }
+                      ],
                       "nullable": true
                     },
                     "meta": {
@@ -7828,37 +7174,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Policy"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Policy"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -8029,35 +7356,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -8220,35 +7518,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -8414,35 +7683,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -8490,37 +7730,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Article"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Article"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -8574,37 +7795,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Article"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Article"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -8719,37 +7921,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Article"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Article"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -8977,35 +8160,6 @@
                     "data": {
                       "type": "object",
                       "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
                     }
                   },
                   "required": [
@@ -9237,37 +8391,18 @@
                       "example": "Success"
                     },
                     "data": {
-                      "type": "object",
-                      "nullable": true
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "number",
-                          "example": 1
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/Article"
                         },
-                        "limit": {
-                          "type": "number",
-                          "example": 10
-                        },
-                        "total_items": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "total_pages": {
-                          "type": "number",
-                          "example": 0
-                        },
-                        "has_next_page": {
-                          "type": "boolean",
-                          "example": false
-                        },
-                        "has_prev_page": {
-                          "type": "boolean",
-                          "example": false
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Article"
+                          }
                         }
-                      }
+                      ],
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -9427,6 +8562,102 @@
       }
     },
     "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "identification_number": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "SUPER_ADMIN",
+              "STAFF",
+              "USER"
+            ],
+            "type": "string"
+          },
+          "category": {
+            "enum": [
+              "STUDENT",
+              "LECTURER",
+              "LIBRARY_STAFF",
+              "PUBLIC"
+            ],
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "identification_number",
+          "email",
+          "full_name",
+          "role",
+          "category",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ActivityLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "action": {
+            "type": "string"
+          },
+          "module": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          },
+          "ip_address": {
+            "type": "string"
+          },
+          "device_info": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "module",
+          "details",
+          "ip_address",
+          "device_info",
+          "status",
+          "created_at",
+          "user"
+        ]
+      },
       "RegisterDto": {
         "type": "object",
         "properties": {
@@ -9437,25 +8668,27 @@
           },
           "email": {
             "type": "string",
+            "format": "email",
             "example": "user@example.com"
           },
           "password": {
             "type": "string",
-            "example": "Str0ng!P4ss#2024",
-            "minLength": 8
+            "minLength": 8,
+            "pattern": "/(?=.*[a-zA-Z])(?=.*[0-9])/",
+            "example": "Str0ng!P4ss#2024"
           },
           "full_name": {
             "type": "string",
             "example": "John Doe"
           },
           "category": {
-            "type": "string",
             "enum": [
               "STUDENT",
               "LECTURER",
               "LIBRARY_STAFF",
               "PUBLIC"
             ],
+            "type": "string",
             "example": "STUDENT"
           }
         },
@@ -9472,12 +8705,13 @@
         "properties": {
           "email": {
             "type": "string",
+            "format": "email",
             "example": "user@example.com"
           },
           "password": {
             "type": "string",
-            "example": "Str0ng!P4ss#2024",
-            "minLength": 8
+            "minLength": 8,
+            "example": "Str0ng!P4ss#2024"
           }
         },
         "required": [
@@ -9499,33 +8733,257 @@
         "type": "object",
         "properties": {
           "role": {
-            "type": "string",
             "enum": [
               "SUPER_ADMIN",
               "STAFF",
               "USER"
             ],
+            "type": "string",
             "example": "STAFF"
           },
           "category": {
-            "type": "string",
             "enum": [
               "STUDENT",
               "LECTURER",
               "LIBRARY_STAFF",
               "PUBLIC"
             ],
+            "type": "string",
             "example": "LECTURER"
           }
         }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "books": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Book"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "books"
+        ]
+      },
+      "Publisher": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "books": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Book"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "address",
+          "books"
+        ]
+      },
+      "Language": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "books": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Book"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "books"
+        ]
+      },
+      "Author": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "bio": {
+            "type": "string"
+          },
+          "books": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Book"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "bio",
+          "books"
+        ]
+      },
+      "BookItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "barcode": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "AVAILABLE",
+              "RESERVED",
+              "BORROWED",
+              "LOST",
+              "DAMAGED"
+            ],
+            "type": "string"
+          },
+          "condition": {
+            "enum": [
+              "GOOD",
+              "SLIGHTLY_DAMAGED",
+              "HEAVILY_DAMAGED"
+            ],
+            "type": "string"
+          },
+          "book": {
+            "$ref": "#/components/schemas/Book"
+          },
+          "added_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "barcode",
+          "status",
+          "condition",
+          "book",
+          "added_at",
+          "updated_at"
+        ]
+      },
+      "Book": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "sub_title": {
+            "type": "string"
+          },
+          "isbn_13": {
+            "type": "string"
+          },
+          "isbn_10": {
+            "type": "string"
+          },
+          "published_year": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "publisher": {
+            "$ref": "#/components/schemas/Publisher"
+          },
+          "language": {
+            "$ref": "#/components/schemas/Language"
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Author"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookItem"
+            }
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "sub_title",
+          "isbn_13",
+          "isbn_10",
+          "published_year",
+          "description",
+          "image_url",
+          "category",
+          "publisher",
+          "language",
+          "authors",
+          "items",
+          "created_at",
+          "updated_at"
+        ]
       },
       "CreateCategoryDto": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "example": "Fiction",
-            "maxLength": 100
+            "maxLength": 100,
+            "example": "Fiction"
           }
         },
         "required": [
@@ -9537,8 +8995,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Fiction",
-            "maxLength": 100
+            "maxLength": 100,
+            "example": "Fiction"
           }
         }
       },
@@ -9547,8 +9005,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Robert C. Martin",
-            "maxLength": 100
+            "maxLength": 100,
+            "example": "Robert C. Martin"
           },
           "bio": {
             "type": "string",
@@ -9564,8 +9022,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Robert C. Martin",
-            "maxLength": 100
+            "maxLength": 100,
+            "example": "Robert C. Martin"
           },
           "bio": {
             "type": "string",
@@ -9578,8 +9036,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Prentice Hall",
-            "maxLength": 255
+            "maxLength": 255,
+            "example": "Prentice Hall"
           },
           "address": {
             "type": "string",
@@ -9595,8 +9053,8 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Prentice Hall",
-            "maxLength": 255
+            "maxLength": 255,
+            "example": "Prentice Hall"
           },
           "address": {
             "type": "string",
@@ -9609,13 +9067,13 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "English",
-            "maxLength": 100
+            "maxLength": 100,
+            "example": "English"
           },
           "code": {
             "type": "string",
-            "example": "en",
-            "maxLength": 10
+            "maxLength": 10,
+            "example": "en"
           }
         },
         "required": [
@@ -9627,13 +9085,13 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "English",
-            "maxLength": 100
+            "maxLength": 100,
+            "example": "English"
           },
           "code": {
             "type": "string",
-            "example": "en",
-            "maxLength": 10
+            "maxLength": 10,
+            "example": "en"
           }
         }
       },
@@ -9687,7 +9145,7 @@
             "description": "Array ID penulis",
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           }
         },
@@ -9749,7 +9207,7 @@
             "description": "Array ID penulis",
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           }
         }
@@ -9768,7 +9226,6 @@
             "description": "ID buku induk"
           },
           "status": {
-            "type": "string",
             "enum": [
               "AVAILABLE",
               "RESERVED",
@@ -9776,21 +9233,69 @@
               "LOST",
               "DAMAGED"
             ],
+            "type": "string",
             "example": "AVAILABLE"
           },
           "condition": {
-            "type": "string",
             "enum": [
               "GOOD",
               "SLIGHTLY_DAMAGED",
               "HEAVILY_DAMAGED"
             ],
+            "type": "string",
             "example": "GOOD"
           }
         },
         "required": [
           "barcode",
           "book_id"
+        ]
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "bookItem": {
+            "$ref": "#/components/schemas/BookItem"
+          },
+          "borrowed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "due_date": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "returned_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fine_amount": {
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "BORROWED",
+              "RETURNED",
+              "OVERDUE"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user",
+          "bookItem",
+          "borrowed_at",
+          "due_date",
+          "returned_at",
+          "fine_amount",
+          "status"
         ]
       },
       "BorrowBookDto": {
@@ -9806,22 +9311,93 @@
           "barcode"
         ]
       },
+      "Policy": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "fine_per_day": {
+            "type": "number"
+          },
+          "loan_duration_days": {
+            "type": "number"
+          },
+          "max_books_per_user": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "fine_per_day",
+          "loan_duration_days",
+          "max_books_per_user"
+        ]
+      },
       "UpdatePolicyDto": {
         "type": "object",
         "properties": {
           "fine_per_day": {
             "type": "number",
+            "minimum": 0,
             "example": 5000
           },
           "loan_duration_days": {
             "type": "number",
+            "minimum": 1,
             "example": 7
           },
           "max_books_per_user": {
             "type": "number",
+            "minimum": 1,
             "example": 3
           }
         }
+      },
+      "Article": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "is_published": {
+            "type": "boolean"
+          },
+          "author_id": {
+            "type": "number"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "author": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "image_url",
+          "is_published",
+          "author_id",
+          "created_at",
+          "updated_at",
+          "author"
+        ]
       },
       "CreateArticleDto": {
         "type": "object",

@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { Book } from './book.entity';
 import { BookStatus, BookCondition } from '../../../common/enums/book.enum';
 
@@ -43,6 +44,7 @@ export class BookItem {
   @UpdateDateColumn()
   updated_at: Date;
 
+  @ApiHideProperty()
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt?: Date;
 }
